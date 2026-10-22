@@ -1,0 +1,607 @@
+<!doctype html>
+<html lang="en-AU">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Coffin Stock – Radlea</title>
+<style>
+:root{
+  --navy:#1F3A5F; --navy-2:#2C4F7C; --teal:#2A9D8F; --teal-soft:#E3F3F1;
+  --bg:#F4F6F9; --panel:#FFFFFF; --line:#DCE2EA; --fg:#1B2430; --muted:#5F6B7A;
+  --bad:#C0392B; --bad-soft:#FBEAEA; --warn:#B9770E; --warn-soft:#FDF3E1; --ok:#1E8449;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:Arial,Helvetica,sans-serif;font-size:15px;line-height:1.4}
+button,input,select,textarea{font:inherit}
+header.top{background:var(--navy);color:#fff;padding:14px 16px}
+header.top .row{max-width:1100px;margin:0 auto;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+header.top h1{font-size:20px;margin:0;font-weight:bold;flex:1}
+header.top .who{font-size:13px;opacity:.85}
+header.top .who button{background:none;border:1px solid rgba(255,255,255,.4);color:#fff;border-radius:6px;padding:3px 8px;cursor:pointer;margin-left:6px}
+nav.tabs{background:var(--navy-2)}
+nav.tabs .row{max-width:1100px;margin:0 auto;display:flex;overflow-x:auto}
+nav.tabs button{background:none;border:0;color:#cfdbea;padding:11px 16px;cursor:pointer;white-space:nowrap;border-bottom:3px solid transparent}
+nav.tabs button.on{color:#fff;border-bottom-color:var(--teal);font-weight:bold}
+main{max-width:1100px;margin:0 auto;padding:16px;display:flex;flex-direction:column;gap:16px}
+.banner{border-radius:8px;padding:10px 14px;font-size:14px}
+.banner.local{background:var(--warn-soft);color:#6b4a07;border:1px solid #f0d49b}
+.alerts{display:flex;flex-direction:column;gap:8px}
+.alert{background:var(--panel);border:1px solid var(--line);border-left:5px solid var(--line);border-radius:8px;padding:10px 14px}
+.alert .tag{font-size:11px;font-weight:bold;text-transform:uppercase;letter-spacing:.05em;margin-right:8px}
+.alert.today{border-left-color:var(--bad);background:var(--bad-soft)} .alert.today .tag{color:var(--bad)}
+.alert.tomorrow{border-left-color:var(--warn);background:var(--warn-soft)} .alert.tomorrow .tag{color:var(--warn)}
+.alert.later{border-left-color:var(--teal)} .alert.later .tag{color:var(--teal)}
+.alert.unset{color:var(--muted)}
+.alert ul{margin:6px 0 0 18px;padding:0;font-size:14px}
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px}
+.tile{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:12px 14px}
+.tile .lbl{font-size:12px;color:var(--muted)}
+.tile .num{font-size:30px;font-weight:bold;color:var(--navy);margin-top:2px}
+.tile.bad .num{color:var(--bad)}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:14px}
+.card h2{font-size:16px;margin:0;color:var(--navy)}
+.card .head{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:4px}
+.card .head h2{flex:1}
+.card .note{font-size:12.5px;color:var(--muted);margin:2px 0 10px}
+.tw{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th{text-align:left;font-size:12px;color:var(--muted);font-weight:bold;padding:6px 8px;border-bottom:2px solid var(--line);white-space:nowrap}
+td{padding:7px 8px;border-bottom:1px solid var(--line);vertical-align:middle}
+td.n,th.n{text-align:center}
+.btn{background:var(--teal);color:#fff;border:0;border-radius:6px;padding:7px 12px;cursor:pointer;font-weight:bold;font-size:13.5px}
+.btn.sec{background:#fff;color:var(--navy);border:1px solid var(--line)}
+.btn.danger{background:#fff;color:var(--bad);border:1px solid #e9b8b2}
+.btn.sm{padding:4px 9px;font-size:12.5px}
+.btn:disabled{opacity:.5;cursor:default}
+.cell{display:inline-flex;align-items:center;gap:4px}
+.cell button{width:26px;height:26px;border-radius:50%;border:1px solid var(--line);background:#fff;color:var(--navy);cursor:pointer;font-weight:bold;line-height:1;padding:0}
+.cell .v{min-width:30px;text-align:center;font-weight:bold;cursor:pointer;border-bottom:1px dashed var(--muted)}
+.cell .v.none{color:var(--muted);font-weight:normal}
+.cell .v.low{color:var(--bad)}
+.ro{display:block;font-size:11px;color:var(--muted);text-align:center}
+.pill{display:inline-block;border-radius:999px;padding:2px 9px;font-size:12px;font-weight:bold;white-space:nowrap}
+.p-ok{background:#E6F4EA;color:var(--ok)} .p-bad{background:var(--bad-soft);color:var(--bad)}
+.p-warn{background:var(--warn-soft);color:var(--warn)} .p-muted{background:#EEF1F5;color:var(--muted)}
+.sup{font-size:12px;color:var(--muted)}
+.empty{color:var(--muted);font-size:13.5px;padding:10px 4px}
+.log li{padding:6px 0;border-bottom:1px solid var(--line);font-size:13.5px;list-style:none}
+.log{margin:0;padding:0}
+.log .t{color:var(--muted);font-size:12px}
+.hidden{display:none!important}
+/* modal */
+.modal-bg{position:fixed;inset:0;background:rgba(15,25,40,.45);display:flex;align-items:flex-start;justify-content:center;padding:40px 12px;z-index:50;overflow:auto}
+.modal{background:#fff;border-radius:10px;max-width:440px;width:100%;padding:18px}
+.modal h3{margin:0 0 12px;color:var(--navy);font-size:17px}
+.modal label{display:block;font-size:12.5px;color:var(--muted);margin:10px 0 3px}
+.modal input,.modal select,.modal textarea{width:100%;padding:8px 10px;border:1px solid var(--line);border-radius:6px;background:#fff}
+.modal .acts{display:flex;gap:8px;justify-content:flex-end;margin-top:16px}
+.modal .msg{font-size:13px;color:var(--bad);margin-top:8px;min-height:1em}
+.toast{position:fixed;left:50%;bottom:18px;transform:translateX(-50%);background:var(--navy);color:#fff;padding:9px 16px;border-radius:8px;font-size:14px;z-index:60;box-shadow:0 4px 14px rgba(0,0,0,.2)}
+.gate{max-width:360px;margin:60px auto;background:#fff;border:1px solid var(--line);border-radius:10px;padding:22px}
+.gate h2{margin:0 0 6px;color:var(--navy)}
+.gate input{width:100%;padding:10px;border:1px solid var(--line);border-radius:6px;margin:10px 0}
+footer{max-width:1100px;margin:0 auto;padding:4px 16px 24px;font-size:12px;color:var(--muted)}
+@media (max-width:640px){ .hide-sm{display:none} td,th{padding:6px 5px} }
+</style>
+</head>
+<body>
+
+<header class="top"><div class="row">
+  <h1>Coffin Stock</h1>
+  <div class="who" id="who"></div>
+</div></header>
+<nav class="tabs"><div class="row" id="tabs">
+  <button data-tab="overview" class="on">Overview</button>
+  <button data-tab="stock">Stock</button>
+  <button data-tab="schedule">Ordering</button>
+  <button data-tab="activity">Activity</button>
+</div></nav>
+
+<div id="gate" class="gate hidden">
+  <h2>Enter PIN</h2>
+  <div class="sup">Ask Robin for the stock app PIN.</div>
+  <input id="pinInput" type="password" inputmode="numeric" autocomplete="off">
+  <button class="btn" id="pinBtn">Open</button>
+  <div class="sup" id="pinMsg" style="color:var(--bad);margin-top:8px"></div>
+</div>
+
+<main id="app" class="hidden">
+  <div id="localBanner" class="banner local hidden">Local mode — changes are saved on this device only and are not shared. (The shared store could not be reached.)</div>
+
+  <!-- OVERVIEW -->
+  <section data-pane="overview" class="pane" style="display:flex;flex-direction:column;gap:16px">
+    <div class="alerts" id="alerts"></div>
+    <div class="tiles" id="tiles"></div>
+    <div class="card">
+      <div class="head"><h2>What's needed</h2><button class="btn" id="addReq">+ Add funeral</button></div>
+      <p class="note">Upcoming funerals, earliest first, checked against total stock on hand for that coffin. Press <b>Done</b> when the coffin has been used — it comes off stock automatically.</p>
+      <div class="tw"><table>
+        <thead><tr><th>Date</th><th>Deceased</th><th>Coffin</th><th class="hide-sm">From</th><th class="hide-sm">Ref</th><th>Cover</th><th></th></tr></thead>
+        <tbody id="reqBody"></tbody>
+      </table></div>
+    </div>
+  </section>
+
+  <!-- STOCK -->
+  <section data-pane="stock" class="pane hidden" style="display:flex;flex-direction:column;gap:16px">
+    <div class="card">
+      <div class="head">
+        <h2>Stock by holding area</h2>
+        <button class="btn sec" id="useBtn">Record use</button>
+        <button class="btn" id="recvBtn">Receive delivery</button>
+      </div>
+      <p class="note">Use − / + for quick changes, or tap a number to set the count and reorder level. <b>Booked</b> = needed for upcoming funerals; <b>Free</b> = total less booked.</p>
+      <div class="tw"><table>
+        <thead id="stockHead"></thead>
+        <tbody id="stockBody"></tbody>
+      </table></div>
+    </div>
+    <div class="card">
+      <div class="head"><h2>Coffin lines</h2><button class="btn sec" id="addModel">+ Add line</button></div>
+      <p class="note">Lines kept in stock. Remove a line only once its stock is zero.</p>
+      <div id="modelList"></div>
+    </div>
+  </section>
+
+  <!-- SCHEDULE -->
+  <section data-pane="schedule" class="pane hidden" style="display:flex;flex-direction:column;gap:16px">
+    <div class="card">
+      <div class="head"><h2>Ordering schedule</h2><button class="btn sec" id="addSup">+ Add supplier</button></div>
+      <p class="note">Order days drive the reminders on the Overview and the 7am reminder email (on the order day and the day before).</p>
+      <div class="tw"><table>
+        <thead><tr><th>Supplier</th><th class="hide-sm">Supplies</th><th>Order</th><th>Delivery</th><th></th></tr></thead>
+        <tbody id="schedBody"></tbody>
+      </table></div>
+    </div>
+  </section>
+
+  <!-- ACTIVITY -->
+  <section data-pane="activity" class="pane hidden" style="display:flex;flex-direction:column;gap:16px">
+    <div class="card">
+      <div class="head"><h2>Activity</h2><button class="btn sec" id="exportBtn">Download CSV</button></div>
+      <p class="note">Every change, newest first (last 500 kept).</p>
+      <ul class="log" id="log"></ul>
+    </div>
+  </section>
+</main>
+<footer id="foot"></footer>
+
+<div id="modalRoot"></div>
+
+<script>
+(() => {
+'use strict';
+const AREAS = ['Townsville Stock', 'Townsville Coffin Room', 'Burdekin Stock'];
+const AREA_SHORT = { 'Townsville Stock': 'TSV Stock', 'Townsville Coffin Room': 'TSV Coffin Room', 'Burdekin Stock': 'Burdekin' };
+const DAYS = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+const LS_PIN = 'coffin.pin', LS_NAME = 'coffin.name', LS_LOCAL = 'coffin.localState';
+
+const SEED_MODELS = [
+  ['Killara','Majestic Rose'],['Killara','Majestic Black'],['Killara','Majestic Maple'],['Killara','Majestic Teak'],
+  ['Killara','Flinders Rose'],['Killara','Flinders Maple'],['Killara','Grecian Urn ½ Couch Rosewood'],
+  ['Killara','Belgian Blonde'],['Killara','Brandon Maple'],['Ashtons','Basic cremation capsule']
+];
+function seed() {
+  const models = SEED_MODELS.map(([supplier, name], i) => ({ id: 'm' + (i + 1), supplier, name }));
+  const stock = {};
+  for (const m of models) { stock[m.id] = {}; for (const a of AREAS) stock[m.id][a] = { on_hand: null, reorder_at: null }; }
+  return {
+    version: 0, areas: AREAS.slice(), models, stock, requirements: [], log: [],
+    schedule: [
+      { id: 's1', supplier: 'Ashtons', supplies: 'Basic unattended cremation capsules', order_day: 'Wednesday', order_time: 'Morning', delivery_day: 'Monday', delivery_time: 'Morning' },
+      { id: 's2', supplier: 'Killara', supplies: 'Majestic, Flinders, Grecian Urn, Belgian, Brandon', order_day: '', order_time: '', delivery_day: '', delivery_time: '' }
+    ]
+  };
+}
+
+let state = null, mode = 'server', saving = false;
+const ls = { get(k){ try { return localStorage.getItem(k); } catch { return null; } }, set(k,v){ try { localStorage.setItem(k,v); } catch {} } };
+const $ = s => document.querySelector(s);
+const el = (tag, attrs = {}, ...kids) => {
+  const e = document.createElement(tag);
+  for (const [k, v] of Object.entries(attrs)) {
+    if (k === 'class') e.className = v; else if (k.startsWith('on')) e.addEventListener(k.slice(2), v);
+    else if (v !== undefined && v !== null && v !== false) e.setAttribute(k, v === true ? '' : v);
+  }
+  for (const k of kids.flat()) if (k != null && k !== false) e.append(k instanceof Node ? k : document.createTextNode(String(k)));
+  return e;
+};
+const uid = () => Math.random().toString(36).slice(2, 9);
+const who = () => ls.get(LS_NAME) || 'Unknown';
+const modelById = id => state.models.find(m => m.id === id);
+const modelName = id => modelById(id)?.name || '(removed line)';
+const fmtDate = d => { if (!d) return '—'; const x = new Date(d + 'T00:00:00'); return isNaN(x) ? d : x.toLocaleDateString('en-AU', { weekday: 'short', day: 'numeric', month: 'short' }); };
+const todayISO = () => new Intl.DateTimeFormat('en-CA', { timeZone: 'Australia/Brisbane' }).format(new Date());
+const brisDayIdx = () => DAYS.indexOf(new Intl.DateTimeFormat('en-AU', { timeZone: 'Australia/Brisbane', weekday: 'long' }).format(new Date()));
+
+function toast(msg) { const t = el('div', { class: 'toast' }, msg); document.body.append(t); setTimeout(() => t.remove(), 2600); }
+
+// ---------- data access ----------
+async function api(method, body) {
+  const r = await fetch('/api/state', { method, headers: { 'content-type': 'application/json', 'x-app-pin': ls.get(LS_PIN) || '' }, body: body ? JSON.stringify(body) : undefined, cache: 'no-store' });
+  return r;
+}
+async function load(quiet) {
+  if (mode === 'local') return;
+  try {
+    const r = await api('GET');
+    if (r.status === 401) return showGate(quiet ? '' : (ls.get(LS_PIN) ? 'That PIN didn\'t work.' : ''));
+    if (r.status === 404 || !r.ok) throw new Error('store ' + r.status);
+    const data = await r.json();
+    hideGate();
+    if (!data) { state = seed(); await commit(() => {}, 'Stock app set up'); return; }
+    if (!state || data.version !== state.version) { state = data; render(); }
+  } catch (e) {
+    if (state && mode === 'server') { if (!quiet) toast('Could not reach the shared store — showing last loaded data.'); return; }
+    mode = 'local';
+    const saved = ls.get(LS_LOCAL);
+    state = saved ? JSON.parse(saved) : seed();
+    hideGate(); $('#localBanner').classList.remove('hidden'); render();
+  }
+}
+
+// mutator(draft) changes the draft; returns false to cancel.
+async function commit(mutator, logText) {
+  if (saving) { toast('Still saving — try again in a moment.'); return false; }
+  saving = true;
+  try {
+    for (let attempt = 0; attempt < 3; attempt++) {
+      const draft = JSON.parse(JSON.stringify(state));
+      if (mutator(draft) === false) return false;
+      if (logText) { draft.log = [{ at: new Date().toISOString(), by: who(), text: logText }, ...(draft.log || [])].slice(0, 500); }
+      if (mode === 'local') { draft.version = (draft.version || 0) + 1; state = draft; ls.set(LS_LOCAL, JSON.stringify(state)); render(); return true; }
+      const r = await api('PUT', { version: state.version || 0, state: draft });
+      if (r.ok) { state = await r.json(); render(); return true; }
+      if (r.status === 409) { const j = await r.json(); state = j.current; continue; }
+      if (r.status === 401) { showGate('PIN has changed — please re-enter.'); return false; }
+      throw new Error('save ' + r.status);
+    }
+    toast('Someone else is updating at the same time — please try again.'); render(); return false;
+  } catch (e) { toast('Save failed — check your connection and try again.'); return false; }
+  finally { saving = false; }
+}
+
+// ---------- calculations ----------
+function cell(s, mId, a) { return s.stock?.[mId]?.[a] || { on_hand: null, reorder_at: null }; }
+function modelSummary(s) {
+  const booked = {};
+  for (const q of s.requirements) booked[q.modelId] = (booked[q.modelId] || 0) + 1;
+  return s.models.map(m => {
+    let total = 0, counted = 0, low = false;
+    for (const a of s.areas) {
+      const c = cell(s, m.id, a);
+      if (c.on_hand != null) { total += c.on_hand; counted++; }
+      if (c.on_hand != null && c.reorder_at != null && c.on_hand <= c.reorder_at) low = true;
+    }
+    const b = booked[m.id] || 0;
+    const anyCount = counted > 0;
+    const free = anyCount ? total - b : null;
+    const status = free != null && free < 0 ? 'Short' : low ? 'Reorder' : counted === s.areas.length ? 'OK' : 'Not counted';
+    return { m, total: anyCount ? total : null, booked: b, free, status };
+  });
+}
+function coverList(s) {
+  const onHand = {}, counted = {}, used = {};
+  for (const m of s.models) for (const a of s.areas) { const c = cell(s, m.id, a); if (c.on_hand != null) { onHand[m.id] = (onHand[m.id] || 0) + c.on_hand; counted[m.id] = true; } }
+  return [...s.requirements].sort((a, b) => String(a.date).localeCompare(String(b.date))).map(q => {
+    let cover;
+    if (!modelById(q.modelId)) cover = 'Not stocked — order';
+    else if (!counted[q.modelId]) cover = 'Stock not counted';
+    else { used[q.modelId] = (used[q.modelId] || 0) + 1; cover = used[q.modelId] <= onHand[q.modelId] ? 'Covered' : 'Not covered — order'; }
+    return { q, cover };
+  });
+}
+const pillFor = st => ({ OK: 'p-ok', Covered: 'p-ok', Short: 'p-bad', Reorder: 'p-warn', 'Not covered — order': 'p-bad', 'Not stocked — order': 'p-bad' }[st] || 'p-muted');
+
+// ---------- render ----------
+function render() {
+  if (!state) return;
+  $('#app').classList.remove('hidden');
+  $('#who').replaceChildren('Signed in as ', el('b', {}, who()), el('button', { onclick: askName }, 'Change'));
+  renderAlerts(); renderTiles(); renderReqs(); renderStock(); renderModels(); renderSched(); renderLog();
+  $('#foot').textContent = state.updatedAt ? `Last saved ${new Date(state.updatedAt).toLocaleString('en-AU')}${mode === 'local' ? ' (this device only)' : ''}` : '';
+}
+
+function renderAlerts() {
+  const box = $('#alerts'); box.replaceChildren();
+  const today = brisDayIdx();
+  const sums = modelSummary(state);
+  const rows = state.schedule.map(s => { const od = DAYS.indexOf(s.order_day); return { s, until: od < 0 ? null : (od - today + 7) % 7 }; })
+    .sort((a, b) => (a.until ?? 99) - (b.until ?? 99));
+  for (const { s, until } of rows) {
+    if (until === null) { box.append(el('div', { class: 'alert unset' }, el('span', { class: 'tag' }, 'Not set'), el('b', {}, s.supplier), ' — order day not set yet (Ordering tab).')); continue; }
+    const cls = until === 0 ? 'today' : until === 1 ? 'tomorrow' : 'later';
+    const tag = until === 0 ? 'Order today' : until === 1 ? 'Order tomorrow' : `Order in ${until} days`;
+    const a = el('div', { class: 'alert ' + cls }, el('span', { class: 'tag' }, tag), el('b', {}, s.supplier), ` — order ${s.order_day}${s.order_time ? ' ' + s.order_time.toLowerCase() : ''}`,
+      s.delivery_day ? ` · delivery ${s.delivery_day}${s.delivery_time ? ' ' + s.delivery_time.toLowerCase() : ''}` : '');
+    if (until <= 1) {
+      const flagged = sums.filter(x => x.m.supplier === s.supplier && (x.status === 'Short' || x.status === 'Reorder'));
+      a.append(flagged.length ? el('ul', {}, flagged.map(x => el('li', {}, `${x.m.name}: ${x.status === 'Short' ? `short by ${-x.free} for booked funerals` : 'at or below reorder level'} (on hand ${x.total ?? '—'}, booked ${x.booked})`)))
+        : el('div', { class: 'sup', style: 'margin-top:4px' }, 'Nothing flagged — check counts before ordering.'));
+    }
+    box.append(a);
+  }
+}
+
+function renderTiles() {
+  const sums = modelSummary(state), cov = coverList(state);
+  const notCovered = cov.filter(c => c.cover !== 'Covered').length;
+  const total = sums.reduce((t, x) => t + (x.total || 0), 0);
+  const reorder = sums.filter(x => x.status === 'Short' || x.status === 'Reorder').length;
+  const uncounted = state.models.reduce((t, m) => t + state.areas.filter(a => cell(state, m.id, a).on_hand == null).length, 0);
+  const tile = (lbl, v, bad) => el('div', { class: 'tile' + (bad ? ' bad' : '') }, el('div', { class: 'lbl' }, lbl), el('div', { class: 'num' }, v));
+  $('#tiles').replaceChildren(
+    tile('Funerals not covered', notCovered, notCovered > 0),
+    tile('Upcoming funerals', cov.length),
+    tile('Coffins on hand', total),
+    tile('Lines to reorder', reorder, reorder > 0),
+    tile('Counts still to enter', uncounted)
+  );
+}
+
+function renderReqs() {
+  const tb = $('#reqBody'); tb.replaceChildren();
+  const cov = coverList(state);
+  if (!cov.length) { tb.append(el('tr', {}, el('td', { colspan: 7, class: 'empty' }, 'No upcoming funerals entered.'))); return; }
+  for (const { q, cover } of cov) {
+    const overdue = q.date && q.date < todayISO();
+    tb.append(el('tr', {},
+      el('td', { style: overdue ? 'color:var(--bad)' : '' }, fmtDate(q.date)),
+      el('td', {}, q.deceased || '—'),
+      el('td', {}, modelName(q.modelId)),
+      el('td', { class: 'hide-sm' }, AREA_SHORT[q.area] || q.area || '—'),
+      el('td', { class: 'hide-sm' }, q.ref || '—'),
+      el('td', {}, el('span', { class: 'pill ' + pillFor(cover) }, cover)),
+      el('td', { style: 'white-space:nowrap' },
+        el('button', { class: 'btn sm', onclick: () => doneReq(q) }, 'Done'), ' ',
+        el('button', { class: 'btn sec sm', onclick: () => editReq(q) }, 'Edit'))
+    ));
+  }
+}
+
+function renderStock() {
+  $('#stockHead').replaceChildren(el('tr', {}, el('th', {}, 'Line'), state.areas.map(a => el('th', { class: 'n' }, AREA_SHORT[a] || a)),
+    el('th', { class: 'n' }, 'Total'), el('th', { class: 'n' }, 'Booked'), el('th', { class: 'n' }, 'Free'), el('th', {}, 'Status')));
+  const tb = $('#stockBody'); tb.replaceChildren();
+  let lastSup = null;
+  for (const x of modelSummary(state).sort((a, b) => a.m.supplier.localeCompare(b.m.supplier))) {
+    if (x.m.supplier !== lastSup) { lastSup = x.m.supplier; tb.append(el('tr', {}, el('td', { colspan: state.areas.length + 5, class: 'sup', style: 'padding-top:12px;font-weight:bold' }, x.m.supplier))); }
+    tb.append(el('tr', {},
+      el('td', {}, x.m.name),
+      state.areas.map(a => {
+        const c = cell(state, x.m.id, a);
+        const low = c.on_hand != null && c.reorder_at != null && c.on_hand <= c.reorder_at;
+        return el('td', { class: 'n' },
+          el('span', { class: 'cell' },
+            el('button', { title: 'Remove one', onclick: () => bump(x.m, a, -1) }, '−'),
+            el('span', { class: 'v' + (c.on_hand == null ? ' none' : low ? ' low' : ''), onclick: () => editCell(x.m, a) }, c.on_hand == null ? '—' : c.on_hand),
+            el('button', { title: 'Add one', onclick: () => bump(x.m, a, 1) }, '+')),
+          c.reorder_at != null ? el('span', { class: 'ro' }, 'reorder ≤ ' + c.reorder_at) : null);
+      }),
+      el('td', { class: 'n' }, el('b', {}, x.total ?? '—')),
+      el('td', { class: 'n' }, x.booked),
+      el('td', { class: 'n', style: x.free != null && x.free < 0 ? 'color:var(--bad);font-weight:bold' : '' }, x.free ?? '—'),
+      el('td', {}, el('span', { class: 'pill ' + pillFor(x.status) }, x.status))
+    ));
+  }
+}
+
+function renderModels() {
+  const box = $('#modelList'); box.replaceChildren();
+  const t = el('table', {}, el('thead', {}, el('tr', {}, el('th', {}, 'Line'), el('th', {}, 'Supplier'), el('th', {}))));
+  const tb = el('tbody');
+  for (const m of state.models) tb.append(el('tr', {}, el('td', {}, m.name), el('td', {}, m.supplier),
+    el('td', { style: 'text-align:right;white-space:nowrap' }, el('button', { class: 'btn sec sm', onclick: () => editModel(m) }, 'Edit'), ' ', el('button', { class: 'btn danger sm', onclick: () => removeModel(m) }, 'Remove'))));
+  t.append(tb); box.append(el('div', { class: 'tw' }, t));
+}
+
+function renderSched() {
+  const tb = $('#schedBody'); tb.replaceChildren();
+  for (const s of state.schedule) tb.append(el('tr', {},
+    el('td', {}, el('b', {}, s.supplier)),
+    el('td', { class: 'hide-sm' }, s.supplies || '—'),
+    el('td', {}, s.order_day ? `${s.order_day}${s.order_time ? ' ' + s.order_time.toLowerCase() : ''}` : el('span', { class: 'pill p-muted' }, 'Not set')),
+    el('td', {}, s.delivery_day ? `${s.delivery_day}${s.delivery_time ? ' ' + s.delivery_time.toLowerCase() : ''}` : '—'),
+    el('td', { style: 'text-align:right' }, el('button', { class: 'btn sec sm', onclick: () => editSup(s) }, 'Edit'))));
+}
+
+function renderLog() {
+  const ul = $('#log'); ul.replaceChildren();
+  if (!state.log?.length) { ul.append(el('li', { class: 'empty' }, 'No activity yet.')); return; }
+  for (const l of state.log.slice(0, 200)) ul.append(el('li', {}, el('div', {}, l.text), el('div', { class: 't' }, `${new Date(l.at).toLocaleString('en-AU')} · ${l.by}`)));
+}
+
+// ---------- modal helper ----------
+// fields: [{key,label,type:'text'|'number'|'date'|'select'|'textarea',options:[[value,label]],value,required,min}]
+function modal(title, fields, { okText = 'Save', onOk, extra } = {}) {
+  const root = $('#modalRoot');
+  const inputs = {};
+  const form = el('div');
+  for (const f of fields) {
+    let inp;
+    if (f.type === 'select') inp = el('select', {}, (f.options || []).map(([v, l]) => el('option', { value: v, selected: String(v) === String(f.value ?? '') }, l)));
+    else if (f.type === 'textarea') { inp = el('textarea', { rows: 2 }); inp.value = f.value ?? ''; }
+    else { inp = el('input', { type: f.type || 'text', min: f.min, step: f.type === 'number' ? 1 : undefined, inputmode: f.type === 'number' ? 'numeric' : undefined, placeholder: f.placeholder }); inp.value = f.value ?? ''; }
+    inputs[f.key] = inp;
+    form.append(el('label', {}, f.label + (f.required ? ' *' : '')), inp);
+    if (f.hint) form.append(el('div', { class: 'sup', style: 'margin-top:3px' }, f.hint));
+  }
+  const msg = el('div', { class: 'msg' });
+  const close = () => root.replaceChildren();
+  const ok = el('button', { class: 'btn', onclick: async () => {
+    const vals = {};
+    for (const f of fields) {
+      let v = inputs[f.key].value.trim();
+      if (f.required && v === '') { msg.textContent = `${f.label} is required.`; return; }
+      if (f.type === 'number') { if (v === '') v = null; else { v = Number(v); if (!Number.isInteger(v) || v < (f.min ?? -1e9)) { msg.textContent = `${f.label} must be a whole number${f.min != null ? ' of ' + f.min + ' or more' : ''}.`; return; } } }
+      vals[f.key] = v;
+    }
+    ok.disabled = true;
+    const res = await onOk(vals, msg);
+    ok.disabled = false;
+    if (res !== false) close();
+  } }, okText);
+  const bg = el('div', { class: 'modal-bg', onclick: e => { if (e.target === bg) close(); } },
+    el('div', { class: 'modal' }, el('h3', {}, title), form, msg,
+      el('div', { class: 'acts' }, extra || null, el('button', { class: 'btn sec', onclick: close }, 'Cancel'), ok)));
+  root.replaceChildren(bg);
+  const first = form.querySelector('input,select,textarea'); if (first) first.focus();
+}
+const modelOpts = () => state.models.map(m => [m.id, `${m.name} (${m.supplier})`]);
+const areaOpts = () => state.areas.map(a => [a, a]);
+const dayOpts = () => [['', '— not set —'], ...DAYS.map(d => [d, d])];
+
+// ---------- actions ----------
+function askName() {
+  modal('Your name', [{ key: 'name', label: 'Name (shown in the activity log)', value: ls.get(LS_NAME) || '', required: true }], {
+    onOk: v => { ls.set(LS_NAME, v.name); render(); }
+  });
+}
+
+function bump(m, area, d) {
+  const c = cell(state, m.id, area);
+  if (d < 0 && !c.on_hand) { toast('Nothing to remove there.'); return; }
+  commit(s => { const x = s.stock[m.id][area]; x.on_hand = (x.on_hand || 0) + d; }, `${d > 0 ? 'Added' : 'Removed'} 1 × ${m.name} ${d > 0 ? 'to' : 'from'} ${area}`);
+}
+
+function editCell(m, area) {
+  const c = cell(state, m.id, area);
+  modal(`${m.name} — ${area}`, [
+    { key: 'on_hand', label: 'On hand (count)', type: 'number', min: 0, value: c.on_hand, hint: 'Leave blank if not counted.' },
+    { key: 'reorder_at', label: 'Reorder when at or below', type: 'number', min: 0, value: c.reorder_at, hint: 'Leave blank for no reorder flag in this area.' }
+  ], { onOk: v => commit(s => { s.stock[m.id][area] = { on_hand: v.on_hand, reorder_at: v.reorder_at }; },
+      `Set ${m.name} at ${area}: on hand ${v.on_hand ?? '—'}, reorder at ${v.reorder_at ?? '—'}`) });
+}
+
+function moveStock(kind) {
+  const isUse = kind === 'use';
+  modal(isUse ? 'Record coffin used' : 'Receive delivery', [
+    { key: 'modelId', label: 'Coffin', type: 'select', options: modelOpts() },
+    { key: 'area', label: isUse ? 'Taken from' : 'Put into', type: 'select', options: areaOpts() },
+    { key: 'qty', label: 'Quantity', type: 'number', min: 1, value: 1, required: true },
+    { key: 'note', label: isUse ? 'Funeral / note (optional)' : 'Delivery note (optional)' }
+  ], { okText: isUse ? 'Record use' : 'Add to stock', onOk: (v, msg) => {
+    const m = modelById(v.modelId), have = cell(state, v.modelId, v.area).on_hand || 0;
+    if (isUse && v.qty > have) { msg.textContent = `Only ${have} recorded at ${v.area}. Correct the count first if this is wrong.`; return false; }
+    return commit(s => { const x = s.stock[v.modelId][v.area]; x.on_hand = (x.on_hand || 0) + (isUse ? -v.qty : v.qty); },
+      `${isUse ? 'Used' : 'Received'} ${v.qty} × ${m.name} ${isUse ? 'from' : 'into'} ${v.area}${v.note ? ' — ' + v.note : ''}`);
+  } });
+}
+
+function editReq(q) {
+  const isNew = !q;
+  q = q || { id: uid(), ref: '', deceased: '', modelId: state.models[0]?.id, date: '', area: state.areas[0], notes: '' };
+  modal(isNew ? 'Add funeral' : 'Edit funeral', [
+    { key: 'deceased', label: 'Deceased name', value: q.deceased, required: true },
+    { key: 'modelId', label: 'Coffin required', type: 'select', options: modelOpts(), value: q.modelId },
+    { key: 'date', label: 'Date required', type: 'date', value: q.date, required: true },
+    { key: 'area', label: 'Coffin to come from', type: 'select', options: areaOpts(), value: q.area },
+    { key: 'ref', label: 'Case number', value: q.ref, placeholder: 'e.g. TVL-2026-045' },
+    { key: 'notes', label: 'Notes', type: 'textarea', value: q.notes }
+  ], {
+    extra: isNew ? null : el('button', { class: 'btn danger', style: 'margin-right:auto', onclick: () => {
+      $('#modalRoot').replaceChildren();
+      commit(s => { s.requirements = s.requirements.filter(r => r.id !== q.id); }, `Removed funeral ${q.deceased}${q.ref ? ' (' + q.ref + ')' : ''} — no stock change`);
+    } }, 'Delete'),
+    onOk: v => commit(s => {
+      const rec = { ...q, ...v };
+      const i = s.requirements.findIndex(r => r.id === q.id);
+      if (i >= 0) s.requirements[i] = rec; else s.requirements.push(rec);
+    }, `${isNew ? 'Added' : 'Updated'} funeral: ${v.deceased}${v.ref ? ' (' + v.ref + ')' : ''} — ${modelName(v.modelId)}, ${fmtDate(v.date)}`)
+  });
+}
+
+function doneReq(q) {
+  modal(`Done — ${q.deceased}`, [
+    { key: 'area', label: `Take 1 × ${modelName(q.modelId)} from`, type: 'select', options: [...areaOpts(), ['', 'Don\'t change stock (supplied direct / special order)']], value: q.area }
+  ], { okText: 'Mark done', onOk: (v, msg) => {
+    if (v.area && modelById(q.modelId)) {
+      const have = cell(state, q.modelId, v.area).on_hand || 0;
+      if (have < 1) { msg.textContent = `No ${modelName(q.modelId)} recorded at ${v.area}. Pick another area or correct the count first.`; return false; }
+    }
+    return commit(s => {
+      s.requirements = s.requirements.filter(r => r.id !== q.id);
+      if (v.area && s.stock[q.modelId]) s.stock[q.modelId][v.area].on_hand -= 1;
+    }, `Funeral done: ${q.deceased}${q.ref ? ' (' + q.ref + ')' : ''} — ${v.area ? 'used 1 × ' + modelName(q.modelId) + ' from ' + v.area : 'no stock change'}`);
+  } });
+}
+
+function editModel(m) {
+  const isNew = !m;
+  const sups = [...new Set([...state.schedule.map(s => s.supplier), ...state.models.map(x => x.supplier)])];
+  modal(isNew ? 'Add coffin line' : 'Edit coffin line', [
+    { key: 'name', label: 'Line name', value: m?.name, required: true, placeholder: 'e.g. Majestic Rose' },
+    { key: 'supplier', label: 'Supplier', type: 'select', options: sups.map(s => [s, s]), value: m?.supplier }
+  ], { onOk: v => commit(s => {
+    if (isNew) { const id = 'm' + uid(); s.models.push({ id, ...v }); s.stock[id] = {}; for (const a of s.areas) s.stock[id][a] = { on_hand: null, reorder_at: null }; }
+    else Object.assign(s.models.find(x => x.id === m.id), v);
+  }, `${isNew ? 'Added' : 'Renamed'} line: ${v.name} (${v.supplier})`) });
+}
+
+function removeModel(m) {
+  const held = state.areas.reduce((t, a) => t + (cell(state, m.id, a).on_hand || 0), 0);
+  const booked = state.requirements.filter(r => r.modelId === m.id).length;
+  if (held > 0) { toast(`${m.name} still has ${held} in stock — set the counts to 0 first.`); return; }
+  if (booked > 0) { toast(`${m.name} is booked for ${booked} funeral(s) — change those first.`); return; }
+  modal(`Remove ${m.name}?`, [], { okText: 'Remove', onOk: () => commit(s => { s.models = s.models.filter(x => x.id !== m.id); delete s.stock[m.id]; }, `Removed line: ${m.name}`) });
+}
+
+function editSup(sup) {
+  const isNew = !sup;
+  sup = sup || { id: uid(), supplier: '', supplies: '', order_day: '', order_time: '', delivery_day: '', delivery_time: '' };
+  modal(isNew ? 'Add supplier' : `Edit ${sup.supplier}`, [
+    { key: 'supplier', label: 'Supplier', value: sup.supplier, required: true },
+    { key: 'supplies', label: 'Supplies', value: sup.supplies },
+    { key: 'order_day', label: 'Order day', type: 'select', options: dayOpts(), value: sup.order_day },
+    { key: 'order_time', label: 'Order time', value: sup.order_time, placeholder: 'e.g. Morning, by 10am' },
+    { key: 'delivery_day', label: 'Delivery day', type: 'select', options: dayOpts(), value: sup.delivery_day },
+    { key: 'delivery_time', label: 'Delivery time', value: sup.delivery_time }
+  ], { onOk: v => commit(s => {
+    const i = s.schedule.findIndex(x => x.id === sup.id);
+    if (i >= 0) {
+      const old = s.schedule[i].supplier;
+      s.schedule[i] = { ...sup, ...v };
+      if (old !== v.supplier) for (const m of s.models) if (m.supplier === old) m.supplier = v.supplier;
+    } else s.schedule.push({ ...sup, ...v });
+  }, `${isNew ? 'Added' : 'Updated'} supplier ${v.supplier}: order ${v.order_day || 'not set'}${v.order_time ? ' ' + v.order_time : ''}, delivery ${v.delivery_day || 'not set'}`) });
+}
+
+function exportCsv() {
+  const q = v => `"${String(v ?? '').replace(/"/g, '""')}"`;
+  const rows = [['supplier', 'line', 'holding_area', 'on_hand', 'reorder_at']];
+  for (const m of state.models) for (const a of state.areas) { const c = cell(state, m.id, a); rows.push([m.supplier, m.name, a, c.on_hand, c.reorder_at]); }
+  rows.push([], ['date_required', 'deceased', 'coffin', 'from', 'case_ref', 'cover']);
+  for (const { q: r, cover } of coverList(state)) rows.push([r.date, r.deceased, modelName(r.modelId), r.area, r.ref, cover]);
+  rows.push([], ['when', 'who', 'activity']);
+  for (const l of state.log || []) rows.push([l.at, l.by, l.text]);
+  const blob = new Blob([rows.map(r => r.map(q).join(',')).join('\n')], { type: 'text/csv' });
+  const a = el('a', { href: URL.createObjectURL(blob), download: `coffin-stock-${todayISO()}.csv` }); document.body.append(a); a.click(); a.remove();
+}
+
+// ---------- gate ----------
+function showGate(msg) { $('#app').classList.add('hidden'); $('#gate').classList.remove('hidden'); $('#pinMsg').textContent = msg || ''; $('#pinInput').focus(); }
+function hideGate() { $('#gate').classList.add('hidden'); }
+$('#pinBtn').addEventListener('click', () => { ls.set(LS_PIN, $('#pinInput').value.trim()); load(); });
+$('#pinInput').addEventListener('keydown', e => { if (e.key === 'Enter') $('#pinBtn').click(); });
+
+// ---------- wiring ----------
+$('#tabs').addEventListener('click', e => {
+  const b = e.target.closest('button[data-tab]'); if (!b) return;
+  document.querySelectorAll('#tabs button').forEach(x => x.classList.toggle('on', x === b));
+  document.querySelectorAll('.pane').forEach(p => p.classList.toggle('hidden', p.dataset.pane !== b.dataset.tab));
+});
+$('#addReq').addEventListener('click', () => editReq(null));
+$('#useBtn').addEventListener('click', () => moveStock('use'));
+$('#recvBtn').addEventListener('click', () => moveStock('receive'));
+$('#addModel').addEventListener('click', () => editModel(null));
+$('#addSup').addEventListener('click', () => editSup(null));
+$('#exportBtn').addEventListener('click', exportCsv);
+document.addEventListener('visibilitychange', () => { if (!document.hidden) load(true); });
+setInterval(() => { if (!document.hidden && !saving && !$('#modalRoot').children.length) load(true); }, 60000);
+
+if (!ls.get(LS_NAME)) setTimeout(askName, 300);
+load();
+})();
+</script>
+</body>
+</html>
