@@ -8,7 +8,7 @@
 :root{
   --navy:#1F3A5F; --navy-2:#2C4F7C; --teal:#2A9D8F; --teal-soft:#E3F3F1;
   --bg:#F4F6F9; --panel:#FFFFFF; --line:#DCE2EA; --fg:#1B2430; --muted:#5F6B7A;
-  --bad:#C0392B; --bad-soft:#FBEAEA; --warn:#B9770E; --warn-soft:#FDF3E1; --ok:#1E8449;
+  --bad:#C0392B; --bad-soft:#FBEAEA; --warn:#B9770E; --warn-soft:#FDF3E1; --ok:#1E8449; --ok-soft:#E6F4EA;
 }
 *{box-sizing:border-box}
 body{margin:0;background:var(--bg);color:var(--fg);font-family:Arial,Helvetica,sans-serif;font-size:15px;line-height:1.4}
@@ -16,13 +16,15 @@ button,input,select,textarea{font:inherit}
 header.top{background:var(--navy);color:#fff;padding:14px 16px}
 header.top .row{max-width:1100px;margin:0 auto;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
 header.top h1{font-size:20px;margin:0;font-weight:bold;flex:1}
-header.top .who{font-size:13px;opacity:.85}
+header.top .who{font-size:13px;opacity:.9}
 header.top .who button{background:none;border:1px solid rgba(255,255,255,.4);color:#fff;border-radius:6px;padding:3px 8px;cursor:pointer;margin-left:6px}
+.role{display:inline-block;background:var(--teal);color:#fff;border-radius:999px;padding:1px 8px;font-size:11px;font-weight:bold;margin-left:6px;text-transform:uppercase;letter-spacing:.04em}
 nav.tabs{background:var(--navy-2)}
 nav.tabs .row{max-width:1100px;margin:0 auto;display:flex;overflow-x:auto}
 nav.tabs button{background:none;border:0;color:#cfdbea;padding:11px 16px;cursor:pointer;white-space:nowrap;border-bottom:3px solid transparent}
 nav.tabs button.on{color:#fff;border-bottom-color:var(--teal);font-weight:bold}
 main{max-width:1100px;margin:0 auto;padding:16px;display:flex;flex-direction:column;gap:16px}
+.pane{display:flex;flex-direction:column;gap:16px}
 .banner{border-radius:8px;padding:10px 14px;font-size:14px}
 .banner.local{background:var(--warn-soft);color:#6b4a07;border:1px solid #f0d49b}
 .alerts{display:flex;flex-direction:column;gap:8px}
@@ -33,11 +35,11 @@ main{max-width:1100px;margin:0 auto;padding:16px;display:flex;flex-direction:col
 .alert.later{border-left-color:var(--teal)} .alert.later .tag{color:var(--teal)}
 .alert.unset{color:var(--muted)}
 .alert ul{margin:6px 0 0 18px;padding:0;font-size:14px}
-.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px}
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px}
 .tile{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:12px 14px}
 .tile .lbl{font-size:12px;color:var(--muted)}
 .tile .num{font-size:30px;font-weight:bold;color:var(--navy);margin-top:2px}
-.tile.bad .num{color:var(--bad)}
+.tile.bad .num{color:var(--bad)} .tile.warn .num{color:var(--warn)}
 .card{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:14px}
 .card h2{font-size:16px;margin:0;color:var(--navy)}
 .card .head{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:4px}
@@ -48,6 +50,7 @@ table{width:100%;border-collapse:collapse;font-size:14px}
 th{text-align:left;font-size:12px;color:var(--muted);font-weight:bold;padding:6px 8px;border-bottom:2px solid var(--line);white-space:nowrap}
 td{padding:7px 8px;border-bottom:1px solid var(--line);vertical-align:middle}
 td.n,th.n{text-align:center}
+tr.tbc td{background:#FFFBF2}
 .btn{background:var(--teal);color:#fff;border:0;border-radius:6px;padding:7px 12px;cursor:pointer;font-weight:bold;font-size:13.5px}
 .btn.sec{background:#fff;color:var(--navy);border:1px solid var(--line)}
 .btn.danger{background:#fff;color:var(--bad);border:1px solid #e9b8b2}
@@ -60,21 +63,33 @@ td.n,th.n{text-align:center}
 .cell .v.low{color:var(--bad)}
 .ro{display:block;font-size:11px;color:var(--muted);text-align:center}
 .pill{display:inline-block;border-radius:999px;padding:2px 9px;font-size:12px;font-weight:bold;white-space:nowrap}
-.p-ok{background:#E6F4EA;color:var(--ok)} .p-bad{background:var(--bad-soft);color:var(--bad)}
+.cover{display:inline-block;border-radius:6px;padding:3px 8px;font-size:12px;font-weight:bold;max-width:260px}
+.p-ok{background:var(--ok-soft);color:var(--ok)} .p-bad{background:var(--bad-soft);color:var(--bad)}
 .p-warn{background:var(--warn-soft);color:var(--warn)} .p-muted{background:#EEF1F5;color:var(--muted)}
 .sup{font-size:12px;color:var(--muted)}
 .empty{color:var(--muted);font-size:13.5px;padding:10px 4px}
+.instock{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:8px}
+.ist{border:1px solid var(--line);border-radius:8px;padding:9px 11px;display:flex;flex-direction:column;gap:2px}
+.ist .nm{font-weight:bold;color:var(--navy)}
+.ist .fr{font-size:22px;font-weight:bold;color:var(--ok)}
+.ist .fr small{font-size:12px;color:var(--muted);font-weight:normal;margin-left:4px}
+.ist .where{font-size:12px;color:var(--muted)}
+.ist.none{opacity:.55;background:#FAFBFC} .ist.none .fr{color:var(--muted)}
+.ist .oo{font-size:12px;color:var(--warn);font-weight:bold}
 .log li{padding:6px 0;border-bottom:1px solid var(--line);font-size:13.5px;list-style:none}
 .log{margin:0;padding:0}
 .log .t{color:var(--muted);font-size:12px}
 .hidden{display:none!important}
-/* modal */
 .modal-bg{position:fixed;inset:0;background:rgba(15,25,40,.45);display:flex;align-items:flex-start;justify-content:center;padding:40px 12px;z-index:50;overflow:auto}
-.modal{background:#fff;border-radius:10px;max-width:440px;width:100%;padding:18px}
+.modal{background:#fff;border-radius:10px;max-width:460px;width:100%;padding:18px}
 .modal h3{margin:0 0 12px;color:var(--navy);font-size:17px}
 .modal label{display:block;font-size:12.5px;color:var(--muted);margin:10px 0 3px}
 .modal input,.modal select,.modal textarea{width:100%;padding:8px 10px;border:1px solid var(--line);border-radius:6px;background:#fff}
-.modal .acts{display:flex;gap:8px;justify-content:flex-end;margin-top:16px}
+.modal .lines .ln{display:flex;gap:6px;margin-bottom:6px}
+.modal .lines .ln select{flex:1}
+.modal .lines .ln input{width:70px;flex:none}
+.modal .lines .ln button{flex:none}
+.modal .acts{display:flex;gap:8px;justify-content:flex-end;margin-top:16px;flex-wrap:wrap}
 .modal .msg{font-size:13px;color:var(--bad);margin-top:8px;min-height:1em}
 .toast{position:fixed;left:50%;bottom:18px;transform:translateX(-50%);background:var(--navy);color:#fff;padding:9px 16px;border-radius:8px;font-size:14px;z-index:60;box-shadow:0 4px 14px rgba(0,0,0,.2)}
 .gate{max-width:360px;margin:60px auto;background:#fff;border:1px solid var(--line);border-radius:10px;padding:22px}
@@ -92,14 +107,14 @@ footer{max-width:1100px;margin:0 auto;padding:4px 16px 24px;font-size:12px;color
 </div></header>
 <nav class="tabs"><div class="row" id="tabs">
   <button data-tab="overview" class="on">Overview</button>
-  <button data-tab="stock">Stock</button>
-  <button data-tab="schedule">Ordering</button>
-  <button data-tab="activity">Activity</button>
+  <button data-tab="stock" data-mgr>Stock</button>
+  <button data-tab="ordering" data-mgr>Ordering</button>
+  <button data-tab="activity" data-mgr>Activity</button>
 </div></nav>
 
 <div id="gate" class="gate hidden">
   <h2>Enter PIN</h2>
-  <div class="sup">Ask Robin for the stock app PIN.</div>
+  <div class="sup">Staff PIN for entering funerals. Managers use the manager PIN.</div>
   <input id="pinInput" type="password" inputmode="numeric" autocomplete="off">
   <button class="btn" id="pinBtn">Open</button>
   <div class="sup" id="pinMsg" style="color:var(--bad);margin-top:8px"></div>
@@ -109,28 +124,33 @@ footer{max-width:1100px;margin:0 auto;padding:4px 16px 24px;font-size:12px;color
   <div id="localBanner" class="banner local hidden">Local mode — changes are saved on this device only and are not shared. (The shared store could not be reached.)</div>
 
   <!-- OVERVIEW -->
-  <section data-pane="overview" class="pane" style="display:flex;flex-direction:column;gap:16px">
+  <section data-pane="overview" class="pane">
     <div class="alerts" id="alerts"></div>
     <div class="tiles" id="tiles"></div>
     <div class="card">
       <div class="head"><h2>What's needed</h2><button class="btn" id="addReq">+ Add funeral</button></div>
-      <p class="note">Upcoming funerals, earliest first, checked against total stock on hand for that coffin. Press <b>Done</b> when the coffin has been used — it comes off stock automatically.</p>
+      <p class="note" id="reqNote"></p>
       <div class="tw"><table>
         <thead><tr><th>Date</th><th>Deceased</th><th>Coffin</th><th class="hide-sm">From</th><th class="hide-sm">Ref</th><th>Cover</th><th></th></tr></thead>
         <tbody id="reqBody"></tbody>
       </table></div>
     </div>
+    <div class="card">
+      <div class="head"><h2>In stock now</h2></div>
+      <p class="note">Free = on hand less coffins already booked for funerals. Greyed lines have none free.</p>
+      <div class="instock" id="inStock"></div>
+    </div>
   </section>
 
   <!-- STOCK -->
-  <section data-pane="stock" class="pane hidden" style="display:flex;flex-direction:column;gap:16px">
+  <section data-pane="stock" class="pane hidden">
     <div class="card">
       <div class="head">
         <h2>Stock by holding area</h2>
         <button class="btn sec" id="useBtn">Record use</button>
-        <button class="btn" id="recvBtn">Receive delivery</button>
+        <button class="btn" id="recvBtn">Receive (no order)</button>
       </div>
-      <p class="note">Use − / + for quick changes, or tap a number to set the count and reorder level. <b>Booked</b> = needed for upcoming funerals; <b>Free</b> = total less booked.</p>
+      <p class="note">Use − / + for quick changes, or tap a number to set the count and reorder level. <b>Booked</b> = needed for funerals; <b>On order</b> = placed but not yet received; <b>Free</b> = total less booked.</p>
       <div class="tw"><table>
         <thead id="stockHead"></thead>
         <tbody id="stockBody"></tbody>
@@ -143,8 +163,16 @@ footer{max-width:1100px;margin:0 auto;padding:4px 16px 24px;font-size:12px;color
     </div>
   </section>
 
-  <!-- SCHEDULE -->
-  <section data-pane="schedule" class="pane hidden" style="display:flex;flex-direction:column;gap:16px">
+  <!-- ORDERING -->
+  <section data-pane="ordering" class="pane hidden">
+    <div class="card">
+      <div class="head"><h2>Orders</h2><button class="btn" id="addOrder">+ Record order</button></div>
+      <p class="note">Record each order when it's placed. Coffins on order cover funerals that would otherwise be short (if due before the funeral). Press <b>Receive</b> when the delivery arrives to move them into stock.</p>
+      <div class="tw"><table>
+        <thead><tr><th>Order #</th><th>Supplier</th><th class="hide-sm">Placed</th><th>Due</th><th>Coffins</th><th>Status</th><th></th></tr></thead>
+        <tbody id="orderBody"></tbody>
+      </table></div>
+    </div>
     <div class="card">
       <div class="head"><h2>Ordering schedule</h2><button class="btn sec" id="addSup">+ Add supplier</button></div>
       <p class="note">Order days drive the reminders on the Overview and the 7am reminder email (on the order day and the day before).</p>
@@ -156,9 +184,9 @@ footer{max-width:1100px;margin:0 auto;padding:4px 16px 24px;font-size:12px;color
   </section>
 
   <!-- ACTIVITY -->
-  <section data-pane="activity" class="pane hidden" style="display:flex;flex-direction:column;gap:16px">
+  <section data-pane="activity" class="pane hidden">
     <div class="card">
-      <div class="head"><h2>Activity</h2><button class="btn sec" id="exportBtn">Download CSV</button></div>
+      <div class="head"><h2>Activity</h2><button class="btn sec" id="exportBtn">Download CSV</button><button class="btn danger" id="clearBtn">Clear test data</button></div>
       <p class="note">Every change, newest first (last 500 kept).</p>
       <ul class="log" id="log"></ul>
     </div>
@@ -172,7 +200,7 @@ footer{max-width:1100px;margin:0 auto;padding:4px 16px 24px;font-size:12px;color
 (() => {
 'use strict';
 const AREAS = ['Townsville Stock', 'Townsville Coffin Room', 'Burdekin Stock'];
-const AREA_SHORT = { 'Townsville Stock': 'TSV Stock', 'Townsville Coffin Room': 'TSV Coffin Room', 'Burdekin Stock': 'Burdekin' };
+const AREA_SHORT = { 'Townsville Stock': 'TSV Stock', 'Townsville Coffin Room': 'Coffin Room', 'Burdekin Stock': 'Burdekin' };
 const DAYS = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
 const LS_PIN = 'coffin.pin', LS_NAME = 'coffin.name', LS_LOCAL = 'coffin.localState';
 
@@ -186,16 +214,17 @@ function seed() {
   const stock = {};
   for (const m of models) { stock[m.id] = {}; for (const a of AREAS) stock[m.id][a] = { on_hand: null, reorder_at: null }; }
   return {
-    version: 0, areas: AREAS.slice(), models, stock, requirements: [], log: [],
+    version: 0, areas: AREAS.slice(), models, stock, requirements: [], orders: [], log: [],
     schedule: [
-      { id: 's1', supplier: 'Ashtons', supplies: 'Basic unattended cremation capsules', order_day: 'Wednesday', order_time: 'Morning', delivery_day: 'Monday', delivery_time: 'Morning' },
-      { id: 's2', supplier: 'Killara', supplies: 'Majestic, Flinders, Grecian Urn, Belgian, Brandon', order_day: '', order_time: '', delivery_day: '', delivery_time: '' }
+      { id: 's1', supplier: 'Ashtons', supplies: 'Basic unattended cremation capsules', frequency: 'weekly', anchor_date: '', order_day: 'Wednesday', order_time: 'Morning', delivery_day: 'Monday', delivery_time: 'Morning' },
+      { id: 's2', supplier: 'Killara', supplies: 'Majestic, Flinders, Grecian Urn, Belgian, Brandon', frequency: 'fortnightly', anchor_date: '', order_day: 'Friday', order_time: '', delivery_day: '', delivery_time: '' }
     ]
   };
 }
 
-let state = null, mode = 'server', saving = false;
-const ls = { get(k){ try { return localStorage.getItem(k); } catch { return null; } }, set(k,v){ try { localStorage.setItem(k,v); } catch {} } };
+let state = null, mode = 'server', saving = false, role = 'manager';
+const isMgr = () => role === 'manager';
+const ls = { get(k){ try { return localStorage.getItem(k); } catch { return null; } }, set(k,v){ try { localStorage.setItem(k,v); } catch {} }, del(k){ try { localStorage.removeItem(k); } catch {} } };
 const $ = s => document.querySelector(s);
 const el = (tag, attrs = {}, ...kids) => {
   const e = document.createElement(tag);
@@ -208,32 +237,46 @@ const el = (tag, attrs = {}, ...kids) => {
 };
 const uid = () => Math.random().toString(36).slice(2, 9);
 const who = () => ls.get(LS_NAME) || 'Unknown';
+const orders = s => s.orders || [];
 const modelById = id => state.models.find(m => m.id === id);
 const modelName = id => modelById(id)?.name || '(removed line)';
-const fmtDate = d => { if (!d) return '—'; const x = new Date(d + 'T00:00:00'); return isNaN(x) ? d : x.toLocaleDateString('en-AU', { weekday: 'short', day: 'numeric', month: 'short' }); };
+const fmtDate = d => { if (!d) return 'Date TBC'; const x = new Date(d + 'T00:00:00'); return isNaN(x) ? d : x.toLocaleDateString('en-AU', { weekday: 'short', day: 'numeric', month: 'short' }); };
 const todayISO = () => new Intl.DateTimeFormat('en-CA', { timeZone: 'Australia/Brisbane' }).format(new Date());
+const isoDays = iso => Math.round(Date.UTC(+iso.slice(0, 4), +iso.slice(5, 7) - 1, +iso.slice(8, 10)) / 86400000);
+const isoAdd = (iso, n) => new Date((isoDays(iso) + n) * 86400000).toISOString().slice(0, 10);
+const weekdayOf = iso => DAYS[new Date(isoDays(iso) * 86400000).getUTCDay()];
 const brisDayIdx = () => DAYS.indexOf(new Intl.DateTimeFormat('en-AU', { timeZone: 'Australia/Brisbane', weekday: 'long' }).format(new Date()));
+function daysUntilOrder(s) {
+  if (s.frequency === 'fortnightly') {
+    if (!s.anchor_date) return null;
+    return (((isoDays(s.anchor_date) - isoDays(todayISO())) % 14) + 14) % 14;
+  }
+  const od = DAYS.indexOf(s.order_day);
+  return od < 0 ? null : (od - brisDayIdx() + 7) % 7;
+}
+const freqLabel = s => s.frequency === 'fortnightly' ? `Every second ${s.anchor_date ? weekdayOf(s.anchor_date) : (s.order_day || 'week')}` : (s.order_day ? `Every ${s.order_day}` : '');
 
-function toast(msg) { const t = el('div', { class: 'toast' }, msg); document.body.append(t); setTimeout(() => t.remove(), 2600); }
+function toast(msg) { const t = el('div', { class: 'toast' }, msg); document.body.append(t); setTimeout(() => t.remove(), 3000); }
 
 // ---------- data access ----------
 async function api(method, body) {
-  const r = await fetch('/api/state', { method, headers: { 'content-type': 'application/json', 'x-app-pin': ls.get(LS_PIN) || '' }, body: body ? JSON.stringify(body) : undefined, cache: 'no-store' });
-  return r;
+  return fetch('/api/state', { method, headers: { 'content-type': 'application/json', 'x-app-pin': ls.get(LS_PIN) || '' }, body: body ? JSON.stringify(body) : undefined, cache: 'no-store' });
 }
 async function load(quiet) {
   if (mode === 'local') return;
   try {
     const r = await api('GET');
     if (r.status === 401) return showGate(quiet ? '' : (ls.get(LS_PIN) ? 'That PIN didn\'t work.' : ''));
+    if (r.status >= 500) { const j = await r.json().catch(() => ({})); return showGate('The shared store is not set up correctly: ' + (j.error || 'server error ' + r.status) + ' Contact Robin.'); }
     if (r.status === 404 || !r.ok) throw new Error('store ' + r.status);
-    const data = await r.json();
+    const j = await r.json();
     hideGate();
-    if (!data) { state = seed(); await commit(() => {}, 'Stock app set up'); return; }
-    if (!state || data.version !== state.version) { state = data; render(); }
+    const roleChanged = role !== j.role; role = j.role;
+    if (!j.state) { state = seed(); await commit(() => {}, 'Stock app set up'); return; }
+    if (!state || j.state.version !== state.version || roleChanged) { state = j.state; render(); }
   } catch (e) {
     if (state && mode === 'server') { if (!quiet) toast('Could not reach the shared store — showing last loaded data.'); return; }
-    mode = 'local';
+    mode = 'local'; role = 'manager';
     const saved = ls.get(LS_LOCAL);
     state = saved ? JSON.parse(saved) : seed();
     hideGate(); $('#localBanner').classList.remove('hidden'); render();
@@ -248,12 +291,13 @@ async function commit(mutator, logText) {
     for (let attempt = 0; attempt < 3; attempt++) {
       const draft = JSON.parse(JSON.stringify(state));
       if (mutator(draft) === false) return false;
-      if (logText) { draft.log = [{ at: new Date().toISOString(), by: who(), text: logText }, ...(draft.log || [])].slice(0, 500); }
-      if (mode === 'local') { draft.version = (draft.version || 0) + 1; state = draft; ls.set(LS_LOCAL, JSON.stringify(state)); render(); return true; }
+      if (logText) draft.log = [{ at: new Date().toISOString(), by: who(), text: logText }, ...(draft.log || [])].slice(0, 500);
+      if (mode === 'local') { draft.version = (draft.version || 0) + 1; draft.updatedAt = new Date().toISOString(); state = draft; ls.set(LS_LOCAL, JSON.stringify(state)); render(); return true; }
       const r = await api('PUT', { version: state.version || 0, state: draft });
       if (r.ok) { state = await r.json(); render(); return true; }
       if (r.status === 409) { const j = await r.json(); state = j.current; continue; }
       if (r.status === 401) { showGate('PIN has changed — please re-enter.'); return false; }
+      if (r.status === 403) { toast('Only managers can do that.'); return false; }
       throw new Error('save ' + r.status);
     }
     toast('Someone else is updating at the same time — please try again.'); render(); return false;
@@ -263,60 +307,90 @@ async function commit(mutator, logText) {
 
 // ---------- calculations ----------
 function cell(s, mId, a) { return s.stock?.[mId]?.[a] || { on_hand: null, reorder_at: null }; }
+const outstanding = l => Math.max(0, (l.qty || 0) - (l.received || 0));
+const openOrders = s => orders(s).filter(o => o.status === 'open');
+function onOrderFor(s, mId) { return openOrders(s).reduce((t, o) => t + o.lines.filter(l => l.modelId === mId).reduce((u, l) => u + outstanding(l), 0), 0); }
+
+// Funerals in allocation order: date TBC first (could be needed any day), then by date.
+const reqOrder = s => [...s.requirements].sort((a, b) => (a.date ? 1 : 0) - (b.date ? 1 : 0) || String(a.date).localeCompare(String(b.date)));
+
+function coverList(s) {
+  const onHand = {}, counted = {};
+  for (const m of s.models) for (const a of s.areas) { const c = cell(s, m.id, a); if (c.on_hand != null) { onHand[m.id] = (onHand[m.id] || 0) + c.on_hand; counted[m.id] = true; } }
+  // remaining outstanding per order line, earliest due first
+  const pool = openOrders(s).flatMap(o => o.lines.map(l => ({ o, modelId: l.modelId, left: outstanding(l) })))
+    .filter(p => p.left > 0).sort((a, b) => String(a.o.expected || '9999').localeCompare(String(b.o.expected || '9999')));
+  return reqOrder(s).map(q => {
+    let kind, text, order = null;
+    const exists = !!modelById(q.modelId);
+    if (exists && counted[q.modelId] && onHand[q.modelId] > 0) { onHand[q.modelId]--; kind = 'ok'; text = 'Covered'; }
+    else {
+      const usable = pool.find(p => p.modelId === q.modelId && p.left > 0 && (!q.date || !p.o.expected || p.o.expected <= q.date));
+      const late = pool.find(p => p.modelId === q.modelId && p.left > 0);
+      if (usable) { usable.left--; order = usable.o; kind = 'pending'; text = `Covered pending successful order delivery from order #${order.number}${order.expected ? ' (due ' + fmtDate(order.expected) + ')' : ''}`; }
+      else if (late) { late.left--; order = late.o; kind = 'bad'; text = `Not covered — order #${order.number} due ${fmtDate(order.expected)}, after the funeral`; }
+      else if (!exists) { kind = 'bad'; text = 'Not a stocked line — order'; }
+      else if (!counted[q.modelId]) { kind = 'muted'; text = 'Stock not counted'; }
+      else { kind = 'bad'; text = 'Not covered — order needed'; }
+    }
+    return { q, kind, text, order };
+  });
+}
 function modelSummary(s) {
   const booked = {};
   for (const q of s.requirements) booked[q.modelId] = (booked[q.modelId] || 0) + 1;
   return s.models.map(m => {
     let total = 0, counted = 0, low = false;
+    const where = [];
     for (const a of s.areas) {
       const c = cell(s, m.id, a);
-      if (c.on_hand != null) { total += c.on_hand; counted++; }
+      if (c.on_hand != null) { total += c.on_hand; counted++; if (c.on_hand > 0) where.push(`${AREA_SHORT[a] || a} ${c.on_hand}`); }
       if (c.on_hand != null && c.reorder_at != null && c.on_hand <= c.reorder_at) low = true;
     }
-    const b = booked[m.id] || 0;
+    const b = booked[m.id] || 0, oo = onOrderFor(s, m.id);
     const anyCount = counted > 0;
     const free = anyCount ? total - b : null;
-    const status = free != null && free < 0 ? 'Short' : low ? 'Reorder' : counted === s.areas.length ? 'OK' : 'Not counted';
-    return { m, total: anyCount ? total : null, booked: b, free, status };
+    const status = free != null && free + oo < 0 ? 'Short'
+      : free != null && free < 0 ? 'Covered by order'
+      : low ? 'Reorder' : counted === s.areas.length ? 'OK' : 'Not counted';
+    return { m, total: anyCount ? total : null, booked: b, onOrder: oo, free, status, where };
   });
 }
-function coverList(s) {
-  const onHand = {}, counted = {}, used = {};
-  for (const m of s.models) for (const a of s.areas) { const c = cell(s, m.id, a); if (c.on_hand != null) { onHand[m.id] = (onHand[m.id] || 0) + c.on_hand; counted[m.id] = true; } }
-  return [...s.requirements].sort((a, b) => String(a.date).localeCompare(String(b.date))).map(q => {
-    let cover;
-    if (!modelById(q.modelId)) cover = 'Not stocked — order';
-    else if (!counted[q.modelId]) cover = 'Stock not counted';
-    else { used[q.modelId] = (used[q.modelId] || 0) + 1; cover = used[q.modelId] <= onHand[q.modelId] ? 'Covered' : 'Not covered — order'; }
-    return { q, cover };
-  });
-}
-const pillFor = st => ({ OK: 'p-ok', Covered: 'p-ok', Short: 'p-bad', Reorder: 'p-warn', 'Not covered — order': 'p-bad', 'Not stocked — order': 'p-bad' }[st] || 'p-muted');
+const pillFor = st => ({ OK: 'p-ok', Short: 'p-bad', Reorder: 'p-warn', 'Covered by order': 'p-warn', open: 'p-warn', received: 'p-ok', cancelled: 'p-muted' }[st] || 'p-muted');
+const coverCls = k => ({ ok: 'p-ok', pending: 'p-warn', bad: 'p-bad', muted: 'p-muted' }[k]);
+const linesText = o => o.lines.map(l => `${l.qty} × ${modelName(l.modelId)}${l.received ? ` (${l.received} recd)` : ''}`).join(', ');
 
 // ---------- render ----------
 function render() {
   if (!state) return;
   $('#app').classList.remove('hidden');
-  $('#who').replaceChildren('Signed in as ', el('b', {}, who()), el('button', { onclick: askName }, 'Change'));
-  renderAlerts(); renderTiles(); renderReqs(); renderStock(); renderModels(); renderSched(); renderLog();
+  $('#who').replaceChildren(who(), el('span', { class: 'role' }, isMgr() ? 'Manager' : 'Staff'),
+    el('button', { onclick: askName }, 'Name'), mode === 'server' ? el('button', { onclick: switchPin }, isMgr() ? 'Lock' : 'Manager') : null);
+  document.querySelectorAll('#tabs [data-mgr]').forEach(b => b.classList.toggle('hidden', !isMgr()));
+  if (!isMgr() && !document.querySelector('#tabs button[data-tab="overview"]').classList.contains('on')) showTab('overview');
+  $('#reqNote').textContent = isMgr()
+    ? 'Funerals with no date yet are listed first and treated as needed any day. Press Done when the coffin has been used — it comes off stock.'
+    : 'Add each funeral as it is arranged. Leave the date blank if it isn\'t set yet. A manager marks it Done when the coffin is used.';
+  renderAlerts(); renderTiles(); renderReqs(); renderInStock();
+  if (isMgr()) { renderStock(); renderModels(); renderOrders(); renderSched(); renderLog(); }
   $('#foot').textContent = state.updatedAt ? `Last saved ${new Date(state.updatedAt).toLocaleString('en-AU')}${mode === 'local' ? ' (this device only)' : ''}` : '';
 }
 
 function renderAlerts() {
   const box = $('#alerts'); box.replaceChildren();
-  const today = brisDayIdx();
+  if (!isMgr()) return;
   const sums = modelSummary(state);
-  const rows = state.schedule.map(s => { const od = DAYS.indexOf(s.order_day); return { s, until: od < 0 ? null : (od - today + 7) % 7 }; })
-    .sort((a, b) => (a.until ?? 99) - (b.until ?? 99));
+  const rows = state.schedule.map(s => ({ s, until: daysUntilOrder(s) })).sort((a, b) => (a.until ?? 99) - (b.until ?? 99));
   for (const { s, until } of rows) {
-    if (until === null) { box.append(el('div', { class: 'alert unset' }, el('span', { class: 'tag' }, 'Not set'), el('b', {}, s.supplier), ' — order day not set yet (Ordering tab).')); continue; }
+    if (until === null) { box.append(el('div', { class: 'alert unset' }, el('span', { class: 'tag' }, 'Not set'), el('b', {}, s.supplier), s.frequency === 'fortnightly' ? ' — fortnightly: set a known order date on the Ordering tab.' : ' — order day not set yet (Ordering tab).')); continue; }
     const cls = until === 0 ? 'today' : until === 1 ? 'tomorrow' : 'later';
     const tag = until === 0 ? 'Order today' : until === 1 ? 'Order tomorrow' : `Order in ${until} days`;
-    const a = el('div', { class: 'alert ' + cls }, el('span', { class: 'tag' }, tag), el('b', {}, s.supplier), ` — order ${s.order_day}${s.order_time ? ' ' + s.order_time.toLowerCase() : ''}`,
+    const a = el('div', { class: 'alert ' + cls }, el('span', { class: 'tag' }, tag), el('b', {}, s.supplier),
+      ` — order ${fmtDate(isoAdd(todayISO(), until))}${s.order_time ? ' ' + s.order_time.toLowerCase() : ''}${s.frequency === 'fortnightly' ? ' (fortnightly)' : ''}`,
       s.delivery_day ? ` · delivery ${s.delivery_day}${s.delivery_time ? ' ' + s.delivery_time.toLowerCase() : ''}` : '');
     if (until <= 1) {
       const flagged = sums.filter(x => x.m.supplier === s.supplier && (x.status === 'Short' || x.status === 'Reorder'));
-      a.append(flagged.length ? el('ul', {}, flagged.map(x => el('li', {}, `${x.m.name}: ${x.status === 'Short' ? `short by ${-x.free} for booked funerals` : 'at or below reorder level'} (on hand ${x.total ?? '—'}, booked ${x.booked})`)))
+      a.append(flagged.length ? el('ul', {}, flagged.map(x => el('li', {}, `${x.m.name}: ${x.status === 'Short' ? `short by ${-(x.free + x.onOrder)} for booked funerals` : 'at or below reorder level'} (on hand ${x.total ?? '—'}, booked ${x.booked}${x.onOrder ? ', on order ' + x.onOrder : ''})`)))
         : el('div', { class: 'sup', style: 'margin-top:4px' }, 'Nothing flagged — check counts before ordering.'));
     }
     box.append(a);
@@ -325,47 +399,63 @@ function renderAlerts() {
 
 function renderTiles() {
   const sums = modelSummary(state), cov = coverList(state);
-  const notCovered = cov.filter(c => c.cover !== 'Covered').length;
+  const notCovered = cov.filter(c => c.kind === 'bad').length;
+  const pending = cov.filter(c => c.kind === 'pending').length;
+  const tbc = state.requirements.filter(q => !q.date).length;
   const total = sums.reduce((t, x) => t + (x.total || 0), 0);
-  const reorder = sums.filter(x => x.status === 'Short' || x.status === 'Reorder').length;
-  const uncounted = state.models.reduce((t, m) => t + state.areas.filter(a => cell(state, m.id, a).on_hand == null).length, 0);
-  const tile = (lbl, v, bad) => el('div', { class: 'tile' + (bad ? ' bad' : '') }, el('div', { class: 'lbl' }, lbl), el('div', { class: 'num' }, v));
-  $('#tiles').replaceChildren(
-    tile('Funerals not covered', notCovered, notCovered > 0),
-    tile('Upcoming funerals', cov.length),
-    tile('Coffins on hand', total),
-    tile('Lines to reorder', reorder, reorder > 0),
-    tile('Counts still to enter', uncounted)
-  );
+  const tile = (lbl, v, cls) => el('div', { class: 'tile' + (cls ? ' ' + cls : '') }, el('div', { class: 'lbl' }, lbl), el('div', { class: 'num' }, v));
+  const t = [tile('Funerals not covered', notCovered, notCovered ? 'bad' : ''), tile('Covered by an order', pending, pending ? 'warn' : ''),
+    tile('Upcoming funerals', cov.length), tile('Date TBC', tbc, tbc ? 'warn' : ''), tile('Coffins on hand', total)];
+  if (isMgr()) {
+    const reorder = sums.filter(x => x.status === 'Short' || x.status === 'Reorder').length;
+    const uncounted = state.models.reduce((n, m) => n + state.areas.filter(a => cell(state, m.id, a).on_hand == null).length, 0);
+    t.push(tile('Lines to reorder', reorder, reorder ? 'bad' : ''), tile('Counts still to enter', uncounted));
+  }
+  $('#tiles').replaceChildren(...t);
 }
 
 function renderReqs() {
   const tb = $('#reqBody'); tb.replaceChildren();
   const cov = coverList(state);
   if (!cov.length) { tb.append(el('tr', {}, el('td', { colspan: 7, class: 'empty' }, 'No upcoming funerals entered.'))); return; }
-  for (const { q, cover } of cov) {
+  for (const { q, kind, text } of cov) {
     const overdue = q.date && q.date < todayISO();
-    tb.append(el('tr', {},
-      el('td', { style: overdue ? 'color:var(--bad)' : '' }, fmtDate(q.date)),
+    tb.append(el('tr', { class: q.date ? '' : 'tbc' },
+      el('td', { style: overdue ? 'color:var(--bad)' : !q.date ? 'color:var(--warn);font-weight:bold' : '' }, fmtDate(q.date)),
       el('td', {}, q.deceased || '—'),
       el('td', {}, modelName(q.modelId)),
       el('td', { class: 'hide-sm' }, AREA_SHORT[q.area] || q.area || '—'),
       el('td', { class: 'hide-sm' }, q.ref || '—'),
-      el('td', {}, el('span', { class: 'pill ' + pillFor(cover) }, cover)),
+      el('td', {}, el('span', { class: 'cover ' + coverCls(kind) }, text)),
       el('td', { style: 'white-space:nowrap' },
-        el('button', { class: 'btn sm', onclick: () => doneReq(q) }, 'Done'), ' ',
+        isMgr() ? el('button', { class: 'btn sm', onclick: () => doneReq(q) }, 'Done') : null, ' ',
         el('button', { class: 'btn sec sm', onclick: () => editReq(q) }, 'Edit'))
     ));
   }
 }
 
+function renderInStock() {
+  const box = $('#inStock'); box.replaceChildren();
+  const sums = modelSummary(state);
+  const avail = sums.filter(x => x.free > 0).sort((a, b) => b.free - a.free);
+  const none = sums.filter(x => !(x.free > 0));
+  for (const x of [...avail, ...none]) {
+    box.append(el('div', { class: 'ist' + (x.free > 0 ? '' : ' none') },
+      el('div', { class: 'nm' }, x.m.name),
+      el('div', { class: 'fr' }, x.free == null ? '—' : Math.max(0, x.free), el('small', {}, x.free == null ? 'not counted' : 'free')),
+      el('div', { class: 'where' }, x.where.length ? x.where.join(' · ') : 'None on hand'),
+      x.onOrder ? el('div', { class: 'oo' }, `${x.onOrder} on order`) : null));
+  }
+  if (!sums.length) box.append(el('div', { class: 'empty' }, 'No coffin lines set up.'));
+}
+
 function renderStock() {
   $('#stockHead').replaceChildren(el('tr', {}, el('th', {}, 'Line'), state.areas.map(a => el('th', { class: 'n' }, AREA_SHORT[a] || a)),
-    el('th', { class: 'n' }, 'Total'), el('th', { class: 'n' }, 'Booked'), el('th', { class: 'n' }, 'Free'), el('th', {}, 'Status')));
+    el('th', { class: 'n' }, 'Total'), el('th', { class: 'n' }, 'Booked'), el('th', { class: 'n' }, 'On order'), el('th', { class: 'n' }, 'Free'), el('th', {}, 'Status')));
   const tb = $('#stockBody'); tb.replaceChildren();
   let lastSup = null;
   for (const x of modelSummary(state).sort((a, b) => a.m.supplier.localeCompare(b.m.supplier))) {
-    if (x.m.supplier !== lastSup) { lastSup = x.m.supplier; tb.append(el('tr', {}, el('td', { colspan: state.areas.length + 5, class: 'sup', style: 'padding-top:12px;font-weight:bold' }, x.m.supplier))); }
+    if (x.m.supplier !== lastSup) { lastSup = x.m.supplier; tb.append(el('tr', {}, el('td', { colspan: state.areas.length + 6, class: 'sup', style: 'padding-top:12px;font-weight:bold' }, x.m.supplier))); }
     tb.append(el('tr', {},
       el('td', {}, x.m.name),
       state.areas.map(a => {
@@ -380,6 +470,7 @@ function renderStock() {
       }),
       el('td', { class: 'n' }, el('b', {}, x.total ?? '—')),
       el('td', { class: 'n' }, x.booked),
+      el('td', { class: 'n' }, x.onOrder || '—'),
       el('td', { class: 'n', style: x.free != null && x.free < 0 ? 'color:var(--bad);font-weight:bold' : '' }, x.free ?? '—'),
       el('td', {}, el('span', { class: 'pill ' + pillFor(x.status) }, x.status))
     ));
@@ -395,14 +486,36 @@ function renderModels() {
   t.append(tb); box.append(el('div', { class: 'tw' }, t));
 }
 
+function renderOrders() {
+  const tb = $('#orderBody'); tb.replaceChildren();
+  const list = [...orders(state)].sort((a, b) => (a.status === 'open' ? 0 : 1) - (b.status === 'open' ? 0 : 1) || String(b.placed).localeCompare(String(a.placed)));
+  if (!list.length) { tb.append(el('tr', {}, el('td', { colspan: 7, class: 'empty' }, 'No orders recorded yet.'))); return; }
+  for (const o of list.slice(0, 40)) {
+    const late = o.status === 'open' && o.expected && o.expected < todayISO();
+    tb.append(el('tr', {},
+      el('td', {}, el('b', {}, '#' + o.number)),
+      el('td', {}, o.supplier),
+      el('td', { class: 'hide-sm' }, fmtDate(o.placed)),
+      el('td', { style: late ? 'color:var(--bad);font-weight:bold' : '' }, o.expected ? fmtDate(o.expected) : '—'),
+      el('td', {}, linesText(o)),
+      el('td', {}, el('span', { class: 'pill ' + pillFor(late ? 'Short' : o.status) }, late ? 'Overdue' : o.status === 'open' ? 'On order' : o.status === 'received' ? 'Received' : 'Cancelled')),
+      el('td', { style: 'white-space:nowrap;text-align:right' }, o.status === 'open' ? [
+        el('button', { class: 'btn sm', onclick: () => receiveOrder(o) }, 'Receive'), ' ',
+        el('button', { class: 'btn sec sm', onclick: () => editOrder(o) }, 'Edit')] : null)));
+  }
+}
+
 function renderSched() {
   const tb = $('#schedBody'); tb.replaceChildren();
-  for (const s of state.schedule) tb.append(el('tr', {},
-    el('td', {}, el('b', {}, s.supplier)),
-    el('td', { class: 'hide-sm' }, s.supplies || '—'),
-    el('td', {}, s.order_day ? `${s.order_day}${s.order_time ? ' ' + s.order_time.toLowerCase() : ''}` : el('span', { class: 'pill p-muted' }, 'Not set')),
-    el('td', {}, s.delivery_day ? `${s.delivery_day}${s.delivery_time ? ' ' + s.delivery_time.toLowerCase() : ''}` : '—'),
-    el('td', { style: 'text-align:right' }, el('button', { class: 'btn sec sm', onclick: () => editSup(s) }, 'Edit'))));
+  for (const s of state.schedule) {
+    const u = daysUntilOrder(s);
+    tb.append(el('tr', {},
+      el('td', {}, el('b', {}, s.supplier)),
+      el('td', { class: 'hide-sm' }, s.supplies || '—'),
+      el('td', {}, u !== null ? el('span', {}, `${freqLabel(s)}${s.order_time ? ' ' + s.order_time.toLowerCase() : ''}`, el('div', { class: 'sup' }, 'Next: ' + fmtDate(isoAdd(todayISO(), u)))) : el('span', { class: 'pill p-muted' }, 'Not set')),
+      el('td', {}, s.delivery_day ? `${s.delivery_day}${s.delivery_time ? ' ' + s.delivery_time.toLowerCase() : ''}` : '—'),
+      el('td', { style: 'text-align:right' }, el('button', { class: 'btn sec sm', onclick: () => editSup(s) }, 'Edit'))));
+  }
 }
 
 function renderLog() {
@@ -412,15 +525,27 @@ function renderLog() {
 }
 
 // ---------- modal helper ----------
-// fields: [{key,label,type:'text'|'number'|'date'|'select'|'textarea',options:[[value,label]],value,required,min}]
-function modal(title, fields, { okText = 'Save', onOk, extra } = {}) {
+// field types: text | number | date | select | textarea | lines (order lines)
+function modal(title, fields, { okText = 'Save', onOk, extra, intro } = {}) {
   const root = $('#modalRoot');
   const inputs = {};
   const form = el('div');
+  if (intro) form.append(el('div', { class: 'sup', style: 'margin-bottom:6px' }, intro));
   for (const f of fields) {
     let inp;
     if (f.type === 'select') inp = el('select', {}, (f.options || []).map(([v, l]) => el('option', { value: v, selected: String(v) === String(f.value ?? '') }, l)));
     else if (f.type === 'textarea') { inp = el('textarea', { rows: 2 }); inp.value = f.value ?? ''; }
+    else if (f.type === 'lines') {
+      inp = el('div', { class: 'lines' });
+      const addRow = (l = {}) => {
+        const sel = el('select', {}, modelOpts().map(([v, t]) => el('option', { value: v, selected: v === l.modelId }, t)));
+        const q = el('input', { type: 'number', min: 1, step: 1, inputmode: 'numeric' }); q.value = l.qty ?? 1;
+        const row = el('div', { class: 'ln' }, sel, q, el('button', { class: 'btn danger sm', onclick: () => row.remove() }, '✕'));
+        inp.insertBefore(row, inp.lastChild);
+      };
+      inp.append(el('button', { class: 'btn sec sm', onclick: () => addRow() }, '+ Another coffin'));
+      (f.value?.length ? f.value : [{}]).forEach(addRow);
+    }
     else { inp = el('input', { type: f.type || 'text', min: f.min, step: f.type === 'number' ? 1 : undefined, inputmode: f.type === 'number' ? 'numeric' : undefined, placeholder: f.placeholder }); inp.value = f.value ?? ''; }
     inputs[f.key] = inp;
     form.append(el('label', {}, f.label + (f.required ? ' *' : '')), inp);
@@ -431,6 +556,12 @@ function modal(title, fields, { okText = 'Save', onOk, extra } = {}) {
   const ok = el('button', { class: 'btn', onclick: async () => {
     const vals = {};
     for (const f of fields) {
+      if (f.type === 'lines') {
+        const rows = [...inputs[f.key].querySelectorAll('.ln')].map(r => ({ modelId: r.querySelector('select').value, qty: Number(r.querySelector('input').value) }));
+        if (!rows.length) { msg.textContent = 'Add at least one coffin.'; return; }
+        if (rows.some(r => !Number.isInteger(r.qty) || r.qty < 1)) { msg.textContent = 'Each quantity must be a whole number of 1 or more.'; return; }
+        vals[f.key] = rows; continue;
+      }
       let v = inputs[f.key].value.trim();
       if (f.required && v === '') { msg.textContent = `${f.label} is required.`; return; }
       if (f.type === 'number') { if (v === '') v = null; else { v = Number(v); if (!Number.isInteger(v) || v < (f.min ?? -1e9)) { msg.textContent = `${f.label} must be a whole number${f.min != null ? ' of ' + f.min + ' or more' : ''}.`; return; } } }
@@ -450,11 +581,25 @@ function modal(title, fields, { okText = 'Save', onOk, extra } = {}) {
 const modelOpts = () => state.models.map(m => [m.id, `${m.name} (${m.supplier})`]);
 const areaOpts = () => state.areas.map(a => [a, a]);
 const dayOpts = () => [['', '— not set —'], ...DAYS.map(d => [d, d])];
+const supplierNames = () => [...new Set([...state.schedule.map(s => s.supplier), ...state.models.map(x => x.supplier)])];
 
 // ---------- actions ----------
 function askName() {
   modal('Your name', [{ key: 'name', label: 'Name (shown in the activity log)', value: ls.get(LS_NAME) || '', required: true }], {
     onOk: v => { ls.set(LS_NAME, v.name); render(); }
+  });
+}
+function switchPin() {
+  if (isMgr()) { ls.del(LS_PIN); state = null; $('#app').classList.add('hidden'); showGate('Locked. Enter a PIN to continue.'); return; }
+  modal('Manager access', [{ key: 'pin', label: 'Manager PIN', type: 'password', required: true }], {
+    onOk: async (v, msg) => {
+      const prev = ls.get(LS_PIN); ls.set(LS_PIN, v.pin);
+      const r = await api('GET').catch(() => null);
+      if (!r || !r.ok) { ls.set(LS_PIN, prev || ''); msg.textContent = 'That PIN didn\'t work.'; return false; }
+      const j = await r.json();
+      if (j.role !== 'manager') { ls.set(LS_PIN, prev || ''); msg.textContent = 'That is not the manager PIN.'; return false; }
+      role = 'manager'; state = j.state; render(); toast('Manager access unlocked on this device.');
+    }
   });
 }
 
@@ -475,12 +620,13 @@ function editCell(m, area) {
 
 function moveStock(kind) {
   const isUse = kind === 'use';
-  modal(isUse ? 'Record coffin used' : 'Receive delivery', [
+  modal(isUse ? 'Record coffin used' : 'Receive stock (not from a recorded order)', [
     { key: 'modelId', label: 'Coffin', type: 'select', options: modelOpts() },
     { key: 'area', label: isUse ? 'Taken from' : 'Put into', type: 'select', options: areaOpts() },
     { key: 'qty', label: 'Quantity', type: 'number', min: 1, value: 1, required: true },
     { key: 'note', label: isUse ? 'Funeral / note (optional)' : 'Delivery note (optional)' }
-  ], { okText: isUse ? 'Record use' : 'Add to stock', onOk: (v, msg) => {
+  ], { intro: isUse ? null : 'For a recorded order, use Receive on the Ordering tab instead so the order is closed off.',
+    okText: isUse ? 'Record use' : 'Add to stock', onOk: (v, msg) => {
     const m = modelById(v.modelId), have = cell(state, v.modelId, v.area).on_hand || 0;
     if (isUse && v.qty > have) { msg.textContent = `Only ${have} recorded at ${v.area}. Correct the count first if this is wrong.`; return false; }
     return commit(s => { const x = s.stock[v.modelId][v.area]; x.on_hand = (x.on_hand || 0) + (isUse ? -v.qty : v.qty); },
@@ -494,14 +640,14 @@ function editReq(q) {
   modal(isNew ? 'Add funeral' : 'Edit funeral', [
     { key: 'deceased', label: 'Deceased name', value: q.deceased, required: true },
     { key: 'modelId', label: 'Coffin required', type: 'select', options: modelOpts(), value: q.modelId },
-    { key: 'date', label: 'Date required', type: 'date', value: q.date, required: true },
+    { key: 'date', label: 'Funeral date', type: 'date', value: q.date, hint: 'Leave blank if the date isn\'t set yet — it will show as Date TBC and be treated as needed any day.' },
     { key: 'area', label: 'Coffin to come from', type: 'select', options: areaOpts(), value: q.area },
     { key: 'ref', label: 'Case number', value: q.ref, placeholder: 'e.g. TVL-2026-045' },
     { key: 'notes', label: 'Notes', type: 'textarea', value: q.notes }
   ], {
     extra: isNew ? null : el('button', { class: 'btn danger', style: 'margin-right:auto', onclick: () => {
       $('#modalRoot').replaceChildren();
-      commit(s => { s.requirements = s.requirements.filter(r => r.id !== q.id); }, `Removed funeral ${q.deceased}${q.ref ? ' (' + q.ref + ')' : ''} — no stock change`);
+      commit(s => { s.requirements = s.requirements.filter(r => r.id !== q.id); }, `Deleted funeral entry ${q.deceased}${q.ref ? ' (' + q.ref + ')' : ''} — no stock change`);
     } }, 'Delete'),
     onOk: v => commit(s => {
       const rec = { ...q, ...v };
@@ -517,7 +663,7 @@ function doneReq(q) {
   ], { okText: 'Mark done', onOk: (v, msg) => {
     if (v.area && modelById(q.modelId)) {
       const have = cell(state, q.modelId, v.area).on_hand || 0;
-      if (have < 1) { msg.textContent = `No ${modelName(q.modelId)} recorded at ${v.area}. Pick another area or correct the count first.`; return false; }
+      if (have < 1) { msg.textContent = `No ${modelName(q.modelId)} recorded at ${v.area}. Pick another area, receive the order first, or correct the count.`; return false; }
     }
     return commit(s => {
       s.requirements = s.requirements.filter(r => r.id !== q.id);
@@ -526,12 +672,61 @@ function doneReq(q) {
   } });
 }
 
+function editOrder(o) {
+  const isNew = !o;
+  o = o || { id: uid(), number: '', supplier: supplierNames()[0] || '', placed: todayISO(), expected: '', lines: [], status: 'open', notes: '' };
+  modal(isNew ? 'Record order' : `Edit order #${o.number}`, [
+    { key: 'number', label: 'Order number', value: o.number, required: true },
+    { key: 'supplier', label: 'Supplier', type: 'select', options: supplierNames().map(s => [s, s]), value: o.supplier },
+    { key: 'placed', label: 'Date placed', type: 'date', value: o.placed, required: true },
+    { key: 'expected', label: 'Expected delivery', type: 'date', value: o.expected, hint: 'Used to check the order arrives before each funeral.' },
+    { key: 'lines', label: 'Coffins ordered', type: 'lines', value: o.lines },
+    { key: 'notes', label: 'Notes', type: 'textarea', value: o.notes }
+  ], {
+    extra: isNew ? null : el('button', { class: 'btn danger', style: 'margin-right:auto', onclick: () => {
+      $('#modalRoot').replaceChildren();
+      commit(s => { const x = s.orders.find(y => y.id === o.id); if (x) x.status = 'cancelled'; }, `Cancelled order #${o.number} (${o.supplier})`);
+    } }, 'Cancel order'),
+    onOk: (v, msg) => {
+      if (orders(state).some(x => x.id !== o.id && x.number === v.number && x.supplier === v.supplier && x.status !== 'cancelled')) { msg.textContent = `Order #${v.number} for ${v.supplier} already exists.`; return false; }
+      const lines = v.lines.map(l => ({ ...l, received: (o.lines.find(x => x.modelId === l.modelId)?.received) || 0 }));
+      return commit(s => {
+        s.orders = s.orders || [];
+        const rec = { ...o, ...v, lines };
+        const i = s.orders.findIndex(x => x.id === o.id);
+        if (i >= 0) s.orders[i] = rec; else s.orders.push(rec);
+      }, `${isNew ? 'Recorded' : 'Updated'} order #${v.number} (${v.supplier}): ${v.lines.map(l => l.qty + ' × ' + modelName(l.modelId)).join(', ')}${v.expected ? ', due ' + fmtDate(v.expected) : ''}`);
+    }
+  });
+}
+
+function receiveOrder(o) {
+  const open = o.lines.filter(l => outstanding(l) > 0);
+  modal(`Receive order #${o.number}`, [
+    { key: 'area', label: 'Put into', type: 'select', options: areaOpts() },
+    ...open.map((l, i) => ({ key: 'q' + i, label: `${modelName(l.modelId)} — received (${outstanding(l)} outstanding)`, type: 'number', min: 0, value: outstanding(l) }))
+  ], { okText: 'Receive into stock', intro: 'Enter what actually arrived. Anything short stays on order.', onOk: (v, msg) => {
+    const got = open.map((l, i) => ({ l, n: v['q' + i] ?? 0 }));
+    if (got.some(g => g.n > outstanding(g.l))) { msg.textContent = 'You can\'t receive more than is outstanding — edit the order first.'; return false; }
+    if (!got.some(g => g.n > 0)) { msg.textContent = 'Nothing entered as received.'; return false; }
+    return commit(s => {
+      const x = s.orders.find(y => y.id === o.id);
+      for (const g of got) {
+        if (!g.n) continue;
+        const line = x.lines.find(l => l.modelId === g.l.modelId);
+        line.received = (line.received || 0) + g.n;
+        if (s.stock[g.l.modelId]) { const c = s.stock[g.l.modelId][v.area]; c.on_hand = (c.on_hand || 0) + g.n; }
+      }
+      if (x.lines.every(l => outstanding(l) === 0)) { x.status = 'received'; x.received_date = todayISO(); }
+    }, `Received order #${o.number} into ${v.area}: ${got.filter(g => g.n).map(g => g.n + ' × ' + modelName(g.l.modelId)).join(', ')}`);
+  } });
+}
+
 function editModel(m) {
   const isNew = !m;
-  const sups = [...new Set([...state.schedule.map(s => s.supplier), ...state.models.map(x => x.supplier)])];
   modal(isNew ? 'Add coffin line' : 'Edit coffin line', [
     { key: 'name', label: 'Line name', value: m?.name, required: true, placeholder: 'e.g. Majestic Rose' },
-    { key: 'supplier', label: 'Supplier', type: 'select', options: sups.map(s => [s, s]), value: m?.supplier }
+    { key: 'supplier', label: 'Supplier', type: 'select', options: supplierNames().map(s => [s, s]), value: m?.supplier }
   ], { onOk: v => commit(s => {
     if (isNew) { const id = 'm' + uid(); s.models.push({ id, ...v }); s.stock[id] = {}; for (const a of s.areas) s.stock[id][a] = { on_hand: null, reorder_at: null }; }
     else Object.assign(s.models.find(x => x.id === m.id), v);
@@ -541,61 +736,84 @@ function editModel(m) {
 function removeModel(m) {
   const held = state.areas.reduce((t, a) => t + (cell(state, m.id, a).on_hand || 0), 0);
   const booked = state.requirements.filter(r => r.modelId === m.id).length;
+  const onOrd = onOrderFor(state, m.id);
   if (held > 0) { toast(`${m.name} still has ${held} in stock — set the counts to 0 first.`); return; }
   if (booked > 0) { toast(`${m.name} is booked for ${booked} funeral(s) — change those first.`); return; }
+  if (onOrd > 0) { toast(`${m.name} is on an open order — receive or edit it first.`); return; }
   modal(`Remove ${m.name}?`, [], { okText: 'Remove', onOk: () => commit(s => { s.models = s.models.filter(x => x.id !== m.id); delete s.stock[m.id]; }, `Removed line: ${m.name}`) });
 }
 
 function editSup(sup) {
   const isNew = !sup;
-  sup = sup || { id: uid(), supplier: '', supplies: '', order_day: '', order_time: '', delivery_day: '', delivery_time: '' };
+  sup = sup || { id: uid(), supplier: '', supplies: '', frequency: 'weekly', anchor_date: '', order_day: '', order_time: '', delivery_day: '', delivery_time: '' };
   modal(isNew ? 'Add supplier' : `Edit ${sup.supplier}`, [
     { key: 'supplier', label: 'Supplier', value: sup.supplier, required: true },
     { key: 'supplies', label: 'Supplies', value: sup.supplies },
-    { key: 'order_day', label: 'Order day', type: 'select', options: dayOpts(), value: sup.order_day },
+    { key: 'frequency', label: 'How often', type: 'select', options: [['weekly', 'Every week'], ['fortnightly', 'Every second week (fortnightly)']], value: sup.frequency || 'weekly' },
+    { key: 'order_day', label: 'Order day (weekly)', type: 'select', options: dayOpts(), value: sup.order_day },
+    { key: 'anchor_date', label: 'A known order date (fortnightly)', type: 'date', value: sup.anchor_date, hint: 'Any past or upcoming order date. The app counts forward in two-week steps from it.' },
     { key: 'order_time', label: 'Order time', value: sup.order_time, placeholder: 'e.g. Morning, by 10am' },
     { key: 'delivery_day', label: 'Delivery day', type: 'select', options: dayOpts(), value: sup.delivery_day },
     { key: 'delivery_time', label: 'Delivery time', value: sup.delivery_time }
-  ], { onOk: v => commit(s => {
-    const i = s.schedule.findIndex(x => x.id === sup.id);
-    if (i >= 0) {
-      const old = s.schedule[i].supplier;
-      s.schedule[i] = { ...sup, ...v };
-      if (old !== v.supplier) for (const m of s.models) if (m.supplier === old) m.supplier = v.supplier;
-    } else s.schedule.push({ ...sup, ...v });
-  }, `${isNew ? 'Added' : 'Updated'} supplier ${v.supplier}: order ${v.order_day || 'not set'}${v.order_time ? ' ' + v.order_time : ''}, delivery ${v.delivery_day || 'not set'}`) });
+  ], { onOk: (v, msg) => {
+    if (v.frequency === 'fortnightly' && !v.anchor_date) { msg.textContent = 'For fortnightly, enter a known order date.'; return false; }
+    if (v.frequency === 'fortnightly') v.order_day = weekdayOf(v.anchor_date);
+    return commit(s => {
+      const i = s.schedule.findIndex(x => x.id === sup.id);
+      if (i >= 0) {
+        const old = s.schedule[i].supplier;
+        s.schedule[i] = { ...sup, ...v };
+        if (old !== v.supplier) { for (const m of s.models) if (m.supplier === old) m.supplier = v.supplier; for (const o of s.orders || []) if (o.supplier === old) o.supplier = v.supplier; }
+      } else s.schedule.push({ ...sup, ...v });
+    }, `${isNew ? 'Added' : 'Updated'} supplier ${v.supplier}: order ${v.frequency === 'fortnightly' ? 'fortnightly ' + v.order_day + ' from ' + v.anchor_date : (v.order_day || 'not set')}${v.order_time ? ' ' + v.order_time : ''}, delivery ${v.delivery_day || 'not set'}`);
+  } });
+}
+
+function clearTestData() {
+  modal('Clear test data', [{ key: 'confirm', label: 'Type CLEAR to confirm', required: true }], {
+    intro: 'This removes all funerals, orders and the activity log, and blanks every stock count and reorder level. Coffin lines and supplier schedules are kept. A backup of today\'s data is kept in the store.',
+    okText: 'Clear everything', onOk: (v, msg) => {
+      if (v.confirm !== 'CLEAR') { msg.textContent = 'Type CLEAR in capitals to confirm.'; return false; }
+      return commit(s => {
+        s.requirements = []; s.orders = []; s.log = [];
+        for (const m of s.models) for (const a of s.areas) s.stock[m.id][a] = { on_hand: null, reorder_at: null };
+      }, 'Cleared test data — counts, funerals, orders and log reset');
+    }
+  });
 }
 
 function exportCsv() {
   const q = v => `"${String(v ?? '').replace(/"/g, '""')}"`;
   const rows = [['supplier', 'line', 'holding_area', 'on_hand', 'reorder_at']];
   for (const m of state.models) for (const a of state.areas) { const c = cell(state, m.id, a); rows.push([m.supplier, m.name, a, c.on_hand, c.reorder_at]); }
-  rows.push([], ['date_required', 'deceased', 'coffin', 'from', 'case_ref', 'cover']);
-  for (const { q: r, cover } of coverList(state)) rows.push([r.date, r.deceased, modelName(r.modelId), r.area, r.ref, cover]);
+  rows.push([], ['funeral_date', 'deceased', 'coffin', 'from', 'case_ref', 'cover']);
+  for (const c of coverList(state)) rows.push([c.q.date || 'TBC', c.q.deceased, modelName(c.q.modelId), c.q.area, c.q.ref, c.text]);
+  rows.push([], ['order_no', 'supplier', 'placed', 'expected', 'status', 'coffins']);
+  for (const o of orders(state)) rows.push([o.number, o.supplier, o.placed, o.expected, o.status, linesText(o)]);
   rows.push([], ['when', 'who', 'activity']);
   for (const l of state.log || []) rows.push([l.at, l.by, l.text]);
   const blob = new Blob([rows.map(r => r.map(q).join(',')).join('\n')], { type: 'text/csv' });
   const a = el('a', { href: URL.createObjectURL(blob), download: `coffin-stock-${todayISO()}.csv` }); document.body.append(a); a.click(); a.remove();
 }
 
-// ---------- gate ----------
-function showGate(msg) { $('#app').classList.add('hidden'); $('#gate').classList.remove('hidden'); $('#pinMsg').textContent = msg || ''; $('#pinInput').focus(); }
+// ---------- gate / tabs ----------
+function showGate(msg) { $('#app').classList.add('hidden'); $('#gate').classList.remove('hidden'); $('#pinMsg').textContent = msg || ''; $('#pinInput').value = ''; $('#pinInput').focus(); }
 function hideGate() { $('#gate').classList.add('hidden'); }
+function showTab(name) {
+  document.querySelectorAll('#tabs button').forEach(x => x.classList.toggle('on', x.dataset.tab === name));
+  document.querySelectorAll('.pane').forEach(p => p.classList.toggle('hidden', p.dataset.pane !== name));
+}
 $('#pinBtn').addEventListener('click', () => { ls.set(LS_PIN, $('#pinInput').value.trim()); load(); });
 $('#pinInput').addEventListener('keydown', e => { if (e.key === 'Enter') $('#pinBtn').click(); });
-
-// ---------- wiring ----------
-$('#tabs').addEventListener('click', e => {
-  const b = e.target.closest('button[data-tab]'); if (!b) return;
-  document.querySelectorAll('#tabs button').forEach(x => x.classList.toggle('on', x === b));
-  document.querySelectorAll('.pane').forEach(p => p.classList.toggle('hidden', p.dataset.pane !== b.dataset.tab));
-});
+$('#tabs').addEventListener('click', e => { const b = e.target.closest('button[data-tab]'); if (b) showTab(b.dataset.tab); });
 $('#addReq').addEventListener('click', () => editReq(null));
 $('#useBtn').addEventListener('click', () => moveStock('use'));
 $('#recvBtn').addEventListener('click', () => moveStock('receive'));
 $('#addModel').addEventListener('click', () => editModel(null));
+$('#addOrder').addEventListener('click', () => editOrder(null));
 $('#addSup').addEventListener('click', () => editSup(null));
 $('#exportBtn').addEventListener('click', exportCsv);
+$('#clearBtn').addEventListener('click', clearTestData);
 document.addEventListener('visibilitychange', () => { if (!document.hidden) load(true); });
 setInterval(() => { if (!document.hidden && !saving && !$('#modalRoot').children.length) load(true); }, 60000);
 

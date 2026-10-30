@@ -10,15 +10,28 @@ import { getStore } from "@netlify/blobs";
 
 const DAYS = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
 
-function brisbaneDay(offset = 0) {
-  const name = new Intl.DateTimeFormat("en-AU", { timeZone: "Australia/Brisbane", weekday: "long" }).format(new Date());
-  return DAYS[(DAYS.indexOf(name) + offset) % 7];
+const isoDays = (iso) => Math.round(Date.UTC(+iso.slice(0, 4), +iso.slice(5, 7) - 1, +iso.slice(8, 10)) / 86400000);
+const brisbaneISO = () => new Intl.DateTimeFormat("en-CA", { timeZone: "Australia/Brisbane" }).format(new Date());
+
+// Days until the supplier's next order day (0 = today), or null if not set.
+function daysUntilOrder(s) {
+  const today = isoDays(brisbaneISO());
+  if (s.frequency === "fortnightly") {
+    if (!s.anchor_date) return null;
+    return (((isoDays(s.anchor_date) - today) % 14) + 14) % 14;
+  }
+  const od = DAYS.indexOf(s.order_day);
+  if (od < 0) return null;
+  const dow = new Date(today * 86400000).getUTCDay();
+  return (od - dow + 7) % 7;
 }
 
 function analyse(state) {
   const lines = [];
-  const need = {};
+  const need = {}, onOrder = {};
   for (const q of state.requirements || []) need[q.modelId] = (need[q.modelId] || 0) + 1;
+  for (const o of state.orders || []) if (o.status === "open")
+    for (const l of o.lines || []) onOrder[l.modelId] = (onOrder[l.modelId] || 0) + Math.max(0, (l.qty || 0) - (l.received || 0));
   for (const m of state.models || []) {
     let total = 0, counted = 0, low = [];
     for (const a of state.areas) {
@@ -26,11 +39,14 @@ function analyse(state) {
       if (c.on_hand != null) { total += c.on_hand; counted++; }
       if (c.on_hand != null && c.reorder_at != null && c.on_hand <= c.reorder_at) low.push(`${a} ${c.on_hand} (reorder at ${c.reorder_at})`);
     }
-    const committed = need[m.id] || 0;
+    const committed = need[m.id] || 0, oo = onOrder[m.id] || 0;
     const free = counted ? total - committed : null;
-    if (free != null && free < 0) lines.push({ supplier: m.supplier, text: `SHORT  ${m.name}: on hand ${total}, booked ${committed}, short ${-free}` });
-    else if (low.length) lines.push({ supplier: m.supplier, text: `REORDER  ${m.name}: ${low.join("; ")}` });
+    const ooTxt = oo ? `, on order ${oo}` : "";
+    if (free != null && free + oo < 0) lines.push({ supplier: m.supplier, text: `SHORT  ${m.name}: on hand ${total}, booked ${committed}${ooTxt}, short ${-(free + oo)}` });
+    else if (low.length) lines.push({ supplier: m.supplier, text: `REORDER  ${m.name}: ${low.join("; ")}${ooTxt}` });
   }
+  const tbc = (state.requirements || []).filter((q) => !q.date).length;
+  if (tbc) lines.push({ supplier: "*", text: `${tbc} funeral(s) arranged with date TBC — coffins counted as needed any day` });
   return lines;
 }
 
@@ -39,23 +55,22 @@ export default async () => {
   const state = await store.get("state", { type: "json" });
   if (!state) return;
 
-  const today = brisbaneDay(0), tomorrow = brisbaneDay(1);
-  const due = (state.schedule || []).filter((s) => s.order_day === today || s.order_day === tomorrow);
+  const due = (state.schedule || []).map((s) => ({ ...s, until: daysUntilOrder(s) })).filter((s) => s.until === 0 || s.until === 1);
   if (!due.length) return;
 
   const lines = analyse(state);
   const parts = [];
   for (const s of due) {
-    const when = s.order_day === today ? "TODAY" : "TOMORROW";
-    parts.push(`${s.supplier} order due ${when} (${s.order_day} ${s.order_time || ""}). Delivery ${s.delivery_day || "TBC"} ${s.delivery_time || ""}.`.replace(/\s+/g, " "));
-    const mine = lines.filter((l) => l.supplier === s.supplier).map((l) => "  - " + l.text);
+    const when = s.until === 0 ? "TODAY" : "TOMORROW";
+    parts.push(`${s.supplier} order due ${when} (${s.order_day} ${s.order_time || ""}${s.frequency === "fortnightly" ? ", fortnightly" : ""}). Delivery ${s.delivery_day || "TBC"} ${s.delivery_time || ""}.`.replace(/\s+/g, " "));
+    const mine = lines.filter((l) => l.supplier === s.supplier || l.supplier === "*").map((l) => "  - " + l.text);
     parts.push(mine.length ? mine.join("\n") : "  - Nothing flagged as short or at reorder level. Check the app before ordering.");
     parts.push("");
   }
   const url = Netlify.env.get("APP_URL");
   if (url) parts.push(`Open the stock app: ${url}`);
 
-  const subject = `Coffin order reminder – ${due.map((s) => s.supplier + (s.order_day === today ? " today" : " tomorrow")).join(", ")}`;
+  const subject = `Coffin order reminder – ${due.map((s) => s.supplier + (s.until === 0 ? " today" : " tomorrow")).join(", ")}`;
   const to = (Netlify.env.get("REMINDER_TO") || "").split(",").map((x) => x.trim()).filter(Boolean);
 
   for (const email of to) {
