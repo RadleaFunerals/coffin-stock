@@ -79,6 +79,16 @@ tr.tbc td{background:#FFFBF2}
 .log li{padding:6px 0;border-bottom:1px solid var(--line);font-size:13.5px;list-style:none}
 .log{margin:0;padding:0}
 .log .t{color:var(--muted);font-size:12px}
+.trail{font-size:11.5px;color:var(--muted);margin-top:2px;line-height:1.35}
+.nmlink{background:none;border:0;padding:0;color:var(--fg);font:inherit;cursor:pointer;text-align:left;text-decoration:underline dotted var(--muted);text-underline-offset:3px}
+.fh{border:1px solid var(--line);border-radius:8px;padding:10px 12px;margin-bottom:8px}
+.fh .hd{display:flex;gap:8px;align-items:baseline;flex-wrap:wrap}
+.fh .hd b{color:var(--navy)}
+.fh ul{margin:6px 0 0;padding:0}
+.fh li{list-style:none;font-size:13px;padding:3px 0;border-top:1px dashed var(--line)}
+.fh li:first-child{border-top:0}
+.dupwarn{background:var(--warn-soft);border:1px solid #f0d49b;color:#6b4a07;border-radius:6px;padding:8px 10px;font-size:13px;margin-top:8px}
+.dupwarn b{color:#5a3d05}
 .hidden{display:none!important}
 .modal-bg{position:fixed;inset:0;background:rgba(15,25,40,.45);display:flex;align-items:flex-start;justify-content:center;padding:40px 12px;z-index:50;overflow:auto}
 .modal{background:#fff;border-radius:10px;max-width:460px;width:100%;padding:18px}
@@ -186,7 +196,12 @@ footer{max-width:1100px;margin:0 auto;padding:4px 16px 24px;font-size:12px;color
   <!-- ACTIVITY -->
   <section data-pane="activity" class="pane hidden">
     <div class="card">
-      <div class="head"><h2>Activity</h2><button class="btn sec" id="exportBtn">Download CSV</button><button class="btn danger" id="clearBtn">Clear test data</button></div>
+      <div class="head"><h2>Funeral history</h2><input id="fhSearch" placeholder="Search name or case #" style="padding:6px 9px;border:1px solid var(--line);border-radius:6px;min-width:200px"></div>
+      <p class="note">Every funeral with who created it and every change since, kept together. Includes funerals already marked Done or deleted.</p>
+      <div id="funeralHistory"></div>
+    </div>
+    <div class="card">
+      <div class="head"><h2>All activity</h2><button class="btn sec" id="exportBtn">Download CSV</button><button class="btn danger" id="clearBtn">Clear test data</button></div>
       <p class="note">Every change, newest first (last 500 kept).</p>
       <ul class="log" id="log"></ul>
     </div>
@@ -256,6 +271,49 @@ function daysUntilOrder(s) {
 }
 const freqLabel = s => s.frequency === 'fortnightly' ? `Every second ${s.anchor_date ? weekdayOf(s.anchor_date) : (s.order_day || 'week')}` : (s.order_day ? `Every ${s.order_day}` : '');
 
+// "16/11/2026 8:43am" in Brisbane time
+function fmtStamp(iso) {
+  if (!iso) return '';
+  const p = Object.fromEntries(new Intl.DateTimeFormat('en-AU', { timeZone: 'Australia/Brisbane', day: '2-digit', month: '2-digit', year: 'numeric', hour: 'numeric', minute: '2-digit', hour12: true }).formatToParts(new Date(iso)).map(x => [x.type, x.value]));
+  return `${p.day}/${p.month}/${p.year} ${p.hour}:${p.minute}${(p.dayPeriod || '').toLowerCase()}`;
+}
+const nameWords = s => String(s || '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim().split(' ').filter(Boolean);
+const normRef = s => String(s || '').toUpperCase().replace(/[^A-Z0-9]/g, '');
+// Same person if the case numbers match, or one name's words are all in the other (2+ words), in any order.
+function sameFuneral(a, b) {
+  if (a.ref && b.ref && normRef(a.ref) === normRef(b.ref)) return 'case number';
+  const x = new Set(nameWords(a.deceased)), y = new Set(nameWords(b.deceased));
+  const [small, big] = x.size <= y.size ? [x, y] : [y, x];
+  if (small.size >= 2 && [...small].every(w => big.has(w))) return 'name';
+  return null;
+}
+const archive = s => s.archive || [];
+// Who created / last changed a funeral. Older entries (before history was kept) fall back to the activity log.
+function creatorOf(q) {
+  if (q.created_by) return { by: q.created_by, at: q.created_at };
+  const l = [...(state.log || [])].reverse().find(e => e.text.startsWith('Added funeral: ' + q.deceased));
+  return l ? { by: l.by, at: l.at } : null;
+}
+function trailText(q) {
+  const c = creatorOf(q);
+  const parts = [c ? `Created by ${c.by} on ${fmtStamp(c.at)}` : 'Entered before history was kept'];
+  const mods = (q.history || []).filter(h => h.kind === 'modified');
+  if (mods.length) { const m = mods[mods.length - 1]; parts.push(`modified by ${m.by} ${fmtStamp(m.at)}${mods.length > 1 ? ` (${mods.length} edits)` : ''}`); }
+  return parts.join(' – ');
+}
+function fullHistory(q) {
+  const h = [...(q.history || [])];
+  if (!h.some(x => x.kind === 'created')) { const c = creatorOf(q); h.unshift({ kind: 'created', by: c?.by || 'Unknown', at: c?.at, text: c ? 'Created' : 'Entered before history was kept' }); }
+  return h;
+}
+function showHistory(q, status) {
+  modal(`${q.deceased}${q.ref ? ' — ' + q.ref : ''}`, [], {
+    intro: `${modelName(q.modelId)} · ${fmtDate(q.date)} · from ${q.area || '—'}${status ? ' · ' + status : ''}`,
+    okText: 'Close', onOk: () => {},
+    body: el('ul', { class: 'log' }, fullHistory(q).map(x => el('li', {}, el('div', {}, x.text), el('div', { class: 't' }, `${x.at ? fmtStamp(x.at) : ''}${x.by ? ' · ' + x.by : ''}`))))
+  });
+}
+
 function toast(msg) { const t = el('div', { class: 'toast' }, msg); document.body.append(t); setTimeout(() => t.remove(), 3000); }
 
 // ---------- data access ----------
@@ -284,14 +342,14 @@ async function load(quiet) {
 }
 
 // mutator(draft) changes the draft; returns false to cancel.
-async function commit(mutator, logText) {
+async function commit(mutator, logText, reqId) {
   if (saving) { toast('Still saving — try again in a moment.'); return false; }
   saving = true;
   try {
     for (let attempt = 0; attempt < 3; attempt++) {
       const draft = JSON.parse(JSON.stringify(state));
       if (mutator(draft) === false) return false;
-      if (logText) draft.log = [{ at: new Date().toISOString(), by: who(), text: logText }, ...(draft.log || [])].slice(0, 500);
+      if (logText) draft.log = [{ at: new Date().toISOString(), by: who(), text: logText, ...(reqId ? { reqId } : {}) }, ...(draft.log || [])].slice(0, 500);
       if (mode === 'local') { draft.version = (draft.version || 0) + 1; draft.updatedAt = new Date().toISOString(); state = draft; ls.set(LS_LOCAL, JSON.stringify(state)); render(); return true; }
       const r = await api('PUT', { version: state.version || 0, state: draft });
       if (r.ok) { state = await r.json(); render(); return true; }
@@ -372,7 +430,7 @@ function render() {
     ? 'Funerals with no date yet are listed first and treated as needed any day. Press Done when the coffin has been used — it comes off stock.'
     : 'Add each funeral as it is arranged. Leave the date blank if it isn\'t set yet. A manager marks it Done when the coffin is used.';
   renderAlerts(); renderTiles(); renderReqs(); renderInStock();
-  if (isMgr()) { renderStock(); renderModels(); renderOrders(); renderSched(); renderLog(); }
+  if (isMgr()) { renderStock(); renderModels(); renderOrders(); renderSched(); renderFuneralHistory(); renderLog(); }
   $('#foot').textContent = state.updatedAt ? `Last saved ${new Date(state.updatedAt).toLocaleString('en-AU')}${mode === 'local' ? ' (this device only)' : ''}` : '';
 }
 
@@ -422,7 +480,7 @@ function renderReqs() {
     const overdue = q.date && q.date < todayISO();
     tb.append(el('tr', { class: q.date ? '' : 'tbc' },
       el('td', { style: overdue ? 'color:var(--bad)' : !q.date ? 'color:var(--warn);font-weight:bold' : '' }, fmtDate(q.date)),
-      el('td', {}, q.deceased || '—'),
+      el('td', {}, el('button', { class: 'nmlink', title: 'Show history', onclick: () => showHistory(q) }, q.deceased || '—'), el('div', { class: 'trail' }, trailText(q))),
       el('td', {}, modelName(q.modelId)),
       el('td', { class: 'hide-sm' }, AREA_SHORT[q.area] || q.area || '—'),
       el('td', { class: 'hide-sm' }, q.ref || '—'),
@@ -518,19 +576,37 @@ function renderSched() {
   }
 }
 
+function renderFuneralHistory() {
+  const box = $('#funeralHistory'); box.replaceChildren();
+  const term = ($('#fhSearch').value || '').toLowerCase().trim();
+  const items = [...state.requirements.map(q => ({ q, status: 'Open' })), ...archive(state).map(q => ({ q, status: q.status === 'deleted' ? 'Deleted' : 'Done' }))]
+    .filter(({ q }) => !term || (q.deceased || '').toLowerCase().includes(term) || (q.ref || '').toLowerCase().includes(term))
+    .sort((a, b) => String(lastTouch(b.q)).localeCompare(String(lastTouch(a.q))));
+  if (!items.length) { box.append(el('div', { class: 'empty' }, term ? 'No funerals match.' : 'No funerals yet.')); return; }
+  for (const { q, status } of items.slice(0, 100)) {
+    box.append(el('div', { class: 'fh' },
+      el('div', { class: 'hd' }, el('b', {}, q.deceased), q.ref ? el('span', { class: 'sup' }, q.ref) : null,
+        el('span', { class: 'sup' }, `${modelName(q.modelId)} · ${fmtDate(q.date)}`),
+        el('span', { class: 'pill ' + (status === 'Open' ? 'p-warn' : status === 'Done' ? 'p-ok' : 'p-muted') }, status)),
+      el('ul', {}, fullHistory(q).map(h => el('li', {}, `${h.text}`, el('span', { class: 'sup' }, ` — ${h.by || 'Unknown'}${h.at ? ', ' + fmtStamp(h.at) : ''}`))))));
+  }
+}
+const lastTouch = q => { const h = q.history || []; return h.length ? h[h.length - 1].at : (creatorOf(q)?.at || ''); };
+
 function renderLog() {
   const ul = $('#log'); ul.replaceChildren();
   if (!state.log?.length) { ul.append(el('li', { class: 'empty' }, 'No activity yet.')); return; }
-  for (const l of state.log.slice(0, 200)) ul.append(el('li', {}, el('div', {}, l.text), el('div', { class: 't' }, `${new Date(l.at).toLocaleString('en-AU')} · ${l.by}`)));
+  for (const l of state.log.slice(0, 200)) ul.append(el('li', {}, el('div', {}, l.text), el('div', { class: 't' }, `${fmtStamp(l.at)} · ${l.by}`)));
 }
 
 // ---------- modal helper ----------
 // field types: text | number | date | select | textarea | lines (order lines)
-function modal(title, fields, { okText = 'Save', onOk, extra, intro } = {}) {
+function modal(title, fields, { okText = 'Save', onOk, extra, intro, body } = {}) {
   const root = $('#modalRoot');
   const inputs = {};
   const form = el('div');
   if (intro) form.append(el('div', { class: 'sup', style: 'margin-bottom:6px' }, intro));
+  if (body) form.append(body);
   for (const f of fields) {
     let inp;
     if (f.type === 'select') inp = el('select', {}, (f.options || []).map(([v, l]) => el('option', { value: v, selected: String(v) === String(f.value ?? '') }, l)));
@@ -568,13 +644,13 @@ function modal(title, fields, { okText = 'Save', onOk, extra, intro } = {}) {
       vals[f.key] = v;
     }
     ok.disabled = true;
-    const res = await onOk(vals, msg);
+    const res = await onOk(vals, msg, ok);
     ok.disabled = false;
     if (res !== false) close();
   } }, okText);
   const bg = el('div', { class: 'modal-bg', onclick: e => { if (e.target === bg) close(); } },
     el('div', { class: 'modal' }, el('h3', {}, title), form, msg,
-      el('div', { class: 'acts' }, extra || null, el('button', { class: 'btn sec', onclick: close }, 'Cancel'), ok)));
+      el('div', { class: 'acts' }, extra || null, okText === 'Close' ? null : el('button', { class: 'btn sec', onclick: close }, 'Cancel'), ok)));
   root.replaceChildren(bg);
   const first = form.querySelector('input,select,textarea'); if (first) first.focus();
 }
@@ -634,26 +710,66 @@ function moveStock(kind) {
   } });
 }
 
+const FIELD_LABELS = { deceased: 'name', modelId: 'coffin', date: 'date', area: 'from', ref: 'case number', notes: 'notes' };
+function describeChanges(oldQ, v) {
+  const show = (k, x) => k === 'modelId' ? modelName(x) : k === 'date' ? fmtDate(x) : (x || '—');
+  return Object.keys(FIELD_LABELS).filter(k => String(oldQ[k] ?? '') !== String(v[k] ?? '')).map(k => `${FIELD_LABELS[k]} ${show(k, oldQ[k])} → ${show(k, v[k])}`);
+}
+function findDuplicates(v, selfId) {
+  const out = [];
+  for (const r of state.requirements) if (r.id !== selfId) { const why = sameFuneral(v, r); if (why) out.push({ r, why, status: 'is already on the list' }); }
+  for (const r of archive(state)) if (r.id !== selfId && r.status !== 'deleted') { const why = sameFuneral(v, r); if (why) out.push({ r, why, status: 'was already marked Done' }); }
+  return out;
+}
+
 function editReq(q) {
   const isNew = !q;
   q = q || { id: uid(), ref: '', deceased: '', modelId: state.models[0]?.id, date: '', area: state.areas[0], notes: '' };
+  let confirmedDup = false;
   modal(isNew ? 'Add funeral' : 'Edit funeral', [
-    { key: 'deceased', label: 'Deceased name', value: q.deceased, required: true },
+    { key: 'deceased', label: 'Deceased name', value: q.deceased, required: true, placeholder: 'e.g. Jones, Mary Elizabeth' },
     { key: 'modelId', label: 'Coffin required', type: 'select', options: modelOpts(), value: q.modelId },
     { key: 'date', label: 'Funeral date', type: 'date', value: q.date, hint: 'Leave blank if the date isn\'t set yet — it will show as Date TBC and be treated as needed any day.' },
     { key: 'area', label: 'Coffin to come from', type: 'select', options: areaOpts(), value: q.area },
     { key: 'ref', label: 'Case number', value: q.ref, placeholder: 'e.g. TVL-2026-045' },
     { key: 'notes', label: 'Notes', type: 'textarea', value: q.notes }
   ], {
+    intro: isNew ? null : trailText(q),
     extra: isNew ? null : el('button', { class: 'btn danger', style: 'margin-right:auto', onclick: () => {
       $('#modalRoot').replaceChildren();
-      commit(s => { s.requirements = s.requirements.filter(r => r.id !== q.id); }, `Deleted funeral entry ${q.deceased}${q.ref ? ' (' + q.ref + ')' : ''} — no stock change`);
+      const now = new Date().toISOString();
+      commit(s => {
+        const r = s.requirements.find(x => x.id === q.id);
+        s.requirements = s.requirements.filter(x => x.id !== q.id);
+        if (r) { r.history = [...fullHistory(r), { kind: 'deleted', by: who(), at: now, text: 'Deleted (no stock change)' }]; r.status = 'deleted'; s.archive = [r, ...(s.archive || [])].slice(0, 300); }
+      }, `Deleted funeral entry ${q.deceased}${q.ref ? ' (' + q.ref + ')' : ''} — no stock change`, q.id);
     } }, 'Delete'),
-    onOk: v => commit(s => {
-      const rec = { ...q, ...v };
-      const i = s.requirements.findIndex(r => r.id === q.id);
-      if (i >= 0) s.requirements[i] = rec; else s.requirements.push(rec);
-    }, `${isNew ? 'Added' : 'Updated'} funeral: ${v.deceased}${v.ref ? ' (' + v.ref + ')' : ''} — ${modelName(v.modelId)}, ${fmtDate(v.date)}`)
+    onOk: (v, msg, okBtn) => {
+      // Duplicate safeguard: warn once, then allow "Save anyway".
+      const dups = (isNew || nameWords(v.deceased).join() !== nameWords(q.deceased).join() || normRef(v.ref) !== normRef(q.ref)) ? findDuplicates(v, q.id) : [];
+      if (dups.length && !confirmedDup) {
+        confirmedDup = true;
+        msg.replaceChildren(el('div', { class: 'dupwarn' }, ...dups.slice(0, 3).map(d => {
+          const c = creatorOf(d.r);
+          return el('div', {}, el('b', {}, d.r.deceased), ` ${d.status} (matching ${d.why}) — ${modelName(d.r.modelId)}, ${fmtDate(d.r.date)}${d.r.ref ? ', ' + d.r.ref : ''}${c ? `, entered by ${c.by} on ${fmtStamp(c.at)}` : ''}.`);
+        }), el('div', { style: 'margin-top:6px' }, 'Please check before saving. If this is a different person, press Save anyway.')));
+        okBtn.textContent = 'Save anyway';
+        return false;
+      }
+      const now = new Date().toISOString();
+      const changes = isNew ? [] : describeChanges(q, v);
+      if (!isNew && !changes.length) return true;
+      return commit(s => {
+        const i = s.requirements.findIndex(r => r.id === q.id);
+        if (isNew) {
+          s.requirements.push({ ...q, ...v, created_by: who(), created_at: now, history: [{ kind: 'created', by: who(), at: now, text: `Created — ${modelName(v.modelId)}, ${fmtDate(v.date)}${dups.length ? ' (saved despite possible duplicate)' : ''}` }] });
+        } else if (i >= 0) {
+          const cur = s.requirements[i];
+          s.requirements[i] = { ...cur, ...v, history: [...fullHistory(cur), { kind: 'modified', by: who(), at: now, text: 'Modified: ' + changes.join('; ') }] };
+        }
+      }, isNew ? `Added funeral: ${v.deceased}${v.ref ? ' (' + v.ref + ')' : ''} — ${modelName(v.modelId)}, ${fmtDate(v.date)}`
+               : `Updated funeral: ${v.deceased}${v.ref ? ' (' + v.ref + ')' : ''} — ${changes.join('; ')}`, q.id);
+    }
   });
 }
 
@@ -665,10 +781,13 @@ function doneReq(q) {
       const have = cell(state, q.modelId, v.area).on_hand || 0;
       if (have < 1) { msg.textContent = `No ${modelName(q.modelId)} recorded at ${v.area}. Pick another area, receive the order first, or correct the count.`; return false; }
     }
+    const now = new Date().toISOString();
     return commit(s => {
-      s.requirements = s.requirements.filter(r => r.id !== q.id);
+      const r = s.requirements.find(x => x.id === q.id);
+      s.requirements = s.requirements.filter(x => x.id !== q.id);
       if (v.area && s.stock[q.modelId]) s.stock[q.modelId][v.area].on_hand -= 1;
-    }, `Funeral done: ${q.deceased}${q.ref ? ' (' + q.ref + ')' : ''} — ${v.area ? 'used 1 × ' + modelName(q.modelId) + ' from ' + v.area : 'no stock change'}`);
+      if (r) { r.history = [...fullHistory(r), { kind: 'done', by: who(), at: now, text: `Marked Done — ${v.area ? 'used 1 × ' + modelName(q.modelId) + ' from ' + v.area : 'no stock change'}` }]; r.status = 'done'; r.done_at = now; s.archive = [r, ...(s.archive || [])].slice(0, 300); }
+    }, `Funeral done: ${q.deceased}${q.ref ? ' (' + q.ref + ')' : ''} — ${v.area ? 'used 1 × ' + modelName(q.modelId) + ' from ' + v.area : 'no stock change'}`, q.id);
   } });
 }
 
@@ -775,7 +894,7 @@ function clearTestData() {
     okText: 'Clear everything', onOk: (v, msg) => {
       if (v.confirm !== 'CLEAR') { msg.textContent = 'Type CLEAR in capitals to confirm.'; return false; }
       return commit(s => {
-        s.requirements = []; s.orders = []; s.log = [];
+        s.requirements = []; s.orders = []; s.log = []; s.archive = [];
         for (const m of s.models) for (const a of s.areas) s.stock[m.id][a] = { on_hand: null, reorder_at: null };
       }, 'Cleared test data — counts, funerals, orders and log reset');
     }
@@ -788,6 +907,8 @@ function exportCsv() {
   for (const m of state.models) for (const a of state.areas) { const c = cell(state, m.id, a); rows.push([m.supplier, m.name, a, c.on_hand, c.reorder_at]); }
   rows.push([], ['funeral_date', 'deceased', 'coffin', 'from', 'case_ref', 'cover']);
   for (const c of coverList(state)) rows.push([c.q.date || 'TBC', c.q.deceased, modelName(c.q.modelId), c.q.area, c.q.ref, c.text]);
+  rows.push([], ['funeral', 'case_ref', 'status', 'when', 'who', 'history']);
+  for (const [r, st] of [...state.requirements.map(r => [r, 'open']), ...archive(state).map(r => [r, r.status])]) for (const h of fullHistory(r)) rows.push([r.deceased, r.ref, st, h.at ? fmtStamp(h.at) : '', h.by, h.text]);
   rows.push([], ['order_no', 'supplier', 'placed', 'expected', 'status', 'coffins']);
   for (const o of orders(state)) rows.push([o.number, o.supplier, o.placed, o.expected, o.status, linesText(o)]);
   rows.push([], ['when', 'who', 'activity']);
@@ -814,6 +935,7 @@ $('#addOrder').addEventListener('click', () => editOrder(null));
 $('#addSup').addEventListener('click', () => editSup(null));
 $('#exportBtn').addEventListener('click', exportCsv);
 $('#clearBtn').addEventListener('click', clearTestData);
+$('#fhSearch').addEventListener('input', renderFuneralHistory);
 document.addEventListener('visibilitychange', () => { if (!document.hidden) load(true); });
 setInterval(() => { if (!document.hidden && !saving && !$('#modalRoot').children.length) load(true); }, 60000);
 
