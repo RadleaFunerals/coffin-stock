@@ -3,7 +3,7 @@
 // PUT  /api/state {version, state}  -> saved state, or 409 with current if someone else saved first
 //
 // Every request carries header x-app-pin.
-//   APP_PIN      (required) staff PIN: may only add / edit / delete funerals.
+//   APP_PIN      (required) staff PIN: may only add / edit / delete funerals (and their history).
 //   MANAGER_PIN  (optional) manager PIN: full access. If not set, APP_PIN has full access.
 import { getStore } from "@netlify/blobs";
 
@@ -14,7 +14,7 @@ const json = (body, status = 200) =>
   });
 
 // Fields staff are allowed to change. Everything else must stay exactly as it was.
-const STAFF_EDITABLE = new Set(["requirements", "log", "version", "updatedAt"]);
+const STAFF_EDITABLE = new Set(["requirements", "archive", "log", "version", "updatedAt"]);
 
 function staffChangesAllowed(current, next) {
   if (!current) return true; // first-ever save (app setting itself up)
